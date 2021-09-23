@@ -1,0 +1,5 @@
+#!/bin/bash
+
+FILE_TYPE=""
+USE_TEMPLATE="N"
+TEMPLATE=""
