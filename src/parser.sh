@@ -2,14 +2,11 @@
 
 source ${SRC_DIR}/args_flags.sh
 
-function missing_argument_validation() {
-    ARG=${1}
-    if [[ -z ${2} ]]
-    then
-        echo "ERROR: missing argument for [${ARG}]"
-        exit 1
-    fi
-}
+if [[ $# == 0 ]]
+then
+    echo "[INFO] No parameters specified"
+    exit 0
+fi
 
 while (( $# ))
 do
@@ -27,6 +24,23 @@ do
         -n|--filename)
             missing_argument_validation ${1} ${2}
             FILENAME="${2}"
+            shift
+            shift
+            ;;
+        -b|--build)
+            missing_argument_validation ${1} ${2}
+            FILENAME="${2}"
+            BUILDING="Y"
+            shift
+            shift
+            ;;
+        -e|--exec)
+            EXECUTION="Y"
+            shift
+            ;;
+        -i|--io)
+            missing_argument_validation ${1} ${2}
+            IO_TYPE=$(echo ${2} | tr '[:lower:]' '[:upper:]')
             shift
             shift
             ;;
