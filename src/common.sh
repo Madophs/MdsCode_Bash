@@ -17,9 +17,11 @@ IO_ARGS=""
 CASETYPE="UCWORDS"
 WHITESPACE_REPLACE="_"
 
-# C++ variables
+# C/C++ variables
 CXXCOMPILER="g++"
 MDS_CXX_FLAGS="-std=c++17 -O0 -Wall -Wextra -g"
+CCCOMPILER="gcc"
+MDS_CC_FLAGS="-Wall -Wextra -g"
 
 function common_setup() {
     mkdir -p "/tmp/mdscode"
