@@ -13,6 +13,7 @@ do
     case $1 in
         -h|--help)
             echo "[INFO] Display help"
+            display_help
             exit 0
             ;;
         -f|--file-type)
@@ -44,7 +45,18 @@ do
             shift
             shift
             ;;
-        -t|--template)
+        -t|--test)
+            if [[ ! -z ${2} ]]; then
+                NO_TEST=${2}
+                CREATE_TESTS="Y"
+                shift
+            else
+                TESTING="Y"
+                EXECUTION="Y"
+            fi
+            shift
+            ;;
+        -p|--template)
             USE_TEMPLATE="Y"
             shift
             ;;
