@@ -28,19 +28,24 @@ function build() {
 }
 
 function io_presetup() {
-    IO_ARGS=""
-    if [[ $IO_TYPE == "IO" ]]
+    if [[ ! -z ${1} ]]
     then
-        IO_ARGS=" < ${IO_DIR}/input > ${IO_DIR}/output"
-    elif [[ $IO_TYPE == "I" ]]
-    then
-        IO_ARGS=" < ${IO_DIR}/input"
-    elif [[ $IO_TYPE == "O" ]]
-    then
-        IO_ARGS=" > ${IO_DIR}/output"
-    elif [[ $IO_TYPE != "N" ]]
-    then
-        echo "[ERROR] Unknown IO type: ${IO_TYPE}."
+        echo "" > ${IO_DIR}/output
+        IO_ARGS=" < ${1} > ${IO_DIR}/output"
+    else
+        if [[ $IO_TYPE == "IO" ]]
+        then
+            IO_ARGS=" < ${IO_DIR}/input > ${IO_DIR}/output"
+        elif [[ $IO_TYPE == "I" ]]
+        then
+            IO_ARGS=" < ${IO_DIR}/input"
+        elif [[ $IO_TYPE == "O" ]]
+        then
+            IO_ARGS=" > ${IO_DIR}/output"
+        elif [[ $IO_TYPE != "N" ]]
+        then
+            echo "[ERROR] Unknown IO type: ${IO_TYPE}."
+        fi
     fi
 }
 
@@ -52,7 +57,8 @@ function execute() {
 
     LAST_BUILD_TYPE=$(cat $BUILD_DIR/last.txt)
 
-    io_presetup
+    io_presetup ${1}
+
     if [[ $LAST_BUILD_TYPE == "cpp" ]]
     then
         eval $BUILD_DIR/run $IO_ARGS
@@ -67,3 +73,5 @@ function execute() {
         exit 1
     fi
 }
+
+

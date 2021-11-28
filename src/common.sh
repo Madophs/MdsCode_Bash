@@ -8,7 +8,13 @@ TEMP_FILE="" # Temporal file
 TEMP_DIR="/tmp/mdscode"
 BUILD_DIR=${SCRIPT_DIR}/build
 IO_DIR=${RES_DIR}/io
+TEST_DIR=${RES_DIR}/tests
+NO_TEST=0
+CREATE_TESTS="N"
+TESTING="N"
 IO_ARGS=""
+WIDTH_1ST_OP=5
+WIDTH_2ND_OP=20
 
 # Global variables for naming conventions
 # CASETYPE
@@ -27,6 +33,7 @@ function common_setup() {
     mkdir -p "/tmp/mdscode"
     mkdir -p ${BUILD_DIR}
     mkdir -p ${IO_DIR}
+    mkdir -p ${TEST_DIR}
     touch ${IO_DIR}/input ${IO_DIR}/output
 }
 
@@ -41,6 +48,27 @@ function missing_argument_validation() {
         echo "[ERROR] Invalid argument \"${2}\""
         exit 1
     fi
+}
+
+function is_digit() {
+    ARG=${1}
+	grep -o -e '^[0-9]*$' <(echo ${ARG}) &> /dev/null
+    if [[ $? != 0 ]]
+    then
+        echo "[ERROR] Invalid value ${ARG}"
+        exit 1
+    fi
+}
+
+function display_help() {
+    printf "Usage: mdscode [options] file...\n"
+    printf "Options:\n"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -b "--build [file]" "Build the given source file (c,cpp,py,java)"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -e "--exec" "Executes the previous compiled file."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -i "--io" "Choose the prevefered IO type (I,O,IO). Default: IO"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -t "--test [no tests]" "Test the last compiled bin. If a parameter is specified (optional) then asks for the tests."
+    printf "\nDeveloped by Jehú Jair Ruiz Villegas\n"
+    printf "Contact: jehuruvj@gmail.com\n"
 }
 
 common_setup
