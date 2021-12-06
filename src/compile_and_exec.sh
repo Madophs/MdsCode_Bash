@@ -1,47 +1,73 @@
 #!/bin/bash
 
+BUILD_REQUIRED="Y"
+
+function build_required() {
+    if [[ -f ${BUILD_DIR}/last.txt ]]
+    then
+        LAST_FILE_BUILT=$(cat $BUILD_DIR/last.txt | tail -n 1 | awk -F '/' '{print $NF}')
+        CURRENT_FILE=$(echo ${FILENAME} | tail -n 1 | awk -F '/' '{print $NF}')
+        if [[ "${CURRENT_FILE}" == "${LAST_FILE_BUILT}" ]]
+        then
+            BINARY=${BUILD_DIR}/run
+            FILE_LAST_TIME_WRITTEN=$(ls -l --time-style full-iso ${FILENAME} | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
+            BIN_LAST_TIME_WRITTEN=$(ls -l --time-style full-iso ${BINARY} | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
+            if [[ ${FILE_LAST_TIME_WRITTEN} < ${BIN_LAST_TIME_WRITTEN} ]]
+            then
+                BUILD_REQUIRED="N"
+                cout warning "[INFO] Skipping build, using previous executable."
+            fi
+        fi
+    fi
+}
+
+function build_file() {
+    if [[ $FILE_TYPE == "cpp" ]]
+    then
+        $CXXCOMPILER $MDS_CXX_FLAGS $FILENAME -o $BUILD_DIR/run
+        if [[ $? != 0 ]]
+        then
+            cout error "[ERROR] Errors found during compilation..."
+            exit 1
+        fi
+    elif [[ $FILE_TYPE == "c" ]]
+    then
+        $CCCOMPILER $MDS_CC_FLAGS $FILENAME -o $BUILD_DIR/run
+        if [[ $? != 0 ]]
+        then
+            cout error "[ERROR] Errors found during compilation..."
+            exit 1
+        fi
+    elif [[ $FILE_TYPE == "py" ]]
+    then
+        cp -f $FILENAME $BUILD_DIR/run
+    fi
+}
+
 function build() {
     ALLOWED_FILE_TYPES=("cpp" "py" "c" "java")
-    PREVIOUS_BUILD=$1
     FILE_TYPE=$(echo $FILENAME | awk -F '.' '{print $NF}')
 
     IS_ALLOWED_FILE_TYPE=$(echo ${ALLOWED_FILE_TYPES} | grep -o ${FILE_TYPE})
     if [[ -n ${IS_ALLOWED_FILE_TYPE} ]]
     then
-        if [[ $FILE_TYPE == "cpp" ]]
-        then
-            $CXXCOMPILER $MDS_CXX_FLAGS $FILENAME -o $BUILD_DIR/run
-            if [[ $? != 0 ]]
-            then
-                cout error "[ERROR] Errors found during compilation..."
-                exit 1
-            fi
-        elif [[ $FILE_TYPE == "c" ]]
-        then
-            $CCCOMPILER $MDS_CC_FLAGS $FILENAME -o $BUILD_DIR/run
-            if [[ $? != 0 ]]
-            then
-                cout error "[ERROR] Errors found during compilation..."
-                exit 1
-            fi
-        elif [[ $FILE_TYPE == "py" ]]
-        then
-            cp -f $FILENAME $BUILD_DIR/run.py
-        fi
 
-        if [[ -z ${PREVIOUS_BUILD} ]]; then
-            # Metadata for future builds
+        build_required
+
+        if [[ ${BUILD_REQUIRED} = "Y" ]]
+        then
+            cout green "Building ${FILENAME}"
+            build_file
+
             echo $FILE_TYPE > $BUILD_DIR/last.txt
-            cp $FILENAME $TEMP_DIR/$FILENAME
+            cp -p $FILENAME $TEMP_DIR/$FILENAME
             echo ${TEMP_DIR}/${FILENAME} >> $BUILD_DIR/last.txt
         fi
     else
         # If we are trying to build a different file from mention aboved, let's built the file found in last.txt
         if [[ -f ${BUILD_DIR}/last.txt ]]
         then
-            cout warning "[WARNING] Filetype not allowed, trying to build last compiled file."
-            FILENAME=$(cat ${BUILD_DIR}/last.txt | tail -n 1)
-            build previous
+            cout warning "[WARNING] Filetype not allowed, skipping building stage."
         fi
     fi
 }
