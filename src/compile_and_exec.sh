@@ -1,30 +1,49 @@
 #!/bin/bash
 
 function build() {
+    ALLOWED_FILE_TYPES=("cpp" "py" "c" "java")
+    PREVIOUS_BUILD=$1
     FILE_TYPE=$(echo $FILENAME | awk -F '.' '{print $NF}')
 
-    if [[ $FILE_TYPE == "cpp" ]]
+    IS_ALLOWED_FILE_TYPE=$(echo ${ALLOWED_FILE_TYPES} | grep -o ${FILE_TYPE})
+    if [[ -n ${IS_ALLOWED_FILE_TYPE} ]]
     then
-        $CXXCOMPILER $MDS_CXX_FLAGS $FILENAME -o $BUILD_DIR/run
-        if [[ $? != 0 ]]
+        if [[ $FILE_TYPE == "cpp" ]]
         then
-            echo "[ERROR] Errors found during compilation..."
-            exit 1
-        fi
-    elif [[ $FILE_TYPE == "c" ]]
-    then
-        $CCCOMPILER $MDS_CC_FLAGS $FILENAME -o $BUILD_DIR/run
-        if [[ $? != 0 ]]
+            $CXXCOMPILER $MDS_CXX_FLAGS $FILENAME -o $BUILD_DIR/run
+            if [[ $? != 0 ]]
+            then
+                cout error "[ERROR] Errors found during compilation..."
+                exit 1
+            fi
+        elif [[ $FILE_TYPE == "c" ]]
         then
-            echo "[ERROR] Errors found during compilation..."
-            exit 1
+            $CCCOMPILER $MDS_CC_FLAGS $FILENAME -o $BUILD_DIR/run
+            if [[ $? != 0 ]]
+            then
+                cout error "[ERROR] Errors found during compilation..."
+                exit 1
+            fi
+        elif [[ $FILE_TYPE == "py" ]]
+        then
+            cp -f $FILENAME $BUILD_DIR/run.py
         fi
-    elif [[ $FILE_TYPE == "py" ]]
-    then
-        cp -f $FILENAME $BUILD_DIR/run.py
-    fi
 
-    echo $FILE_TYPE > $BUILD_DIR/last.txt
+        if [[ -z ${PREVIOUS_BUILD} ]]; then
+            # Metadata for future builds
+            echo $FILE_TYPE > $BUILD_DIR/last.txt
+            cp $FILENAME $TEMP_DIR/$FILENAME
+            echo ${TEMP_DIR}/${FILENAME} >> $BUILD_DIR/last.txt
+        fi
+    else
+        # If we are trying to build a different file from mention aboved, let's built the file found in last.txt
+        if [[ -f ${BUILD_DIR}/last.txt ]]
+        then
+            cout warning "[WARNING] Filetype not allowed, trying to build last compiled file."
+            FILENAME=$(cat ${BUILD_DIR}/last.txt | tail -n 1)
+            build previous
+        fi
+    fi
 }
 
 function io_presetup() {
@@ -44,7 +63,7 @@ function io_presetup() {
             IO_ARGS=" > ${IO_DIR}/output"
         elif [[ $IO_TYPE != "N" ]]
         then
-            echo "[ERROR] Unknown IO type: ${IO_TYPE}."
+            cout error "[ERROR] Unknown IO type: ${IO_TYPE}."
         fi
     fi
 }
@@ -52,10 +71,11 @@ function io_presetup() {
 function execute() {
     if [[ ! -f $BUILD_DIR/last.txt ]]
     then
-        echo "[ERROR] No last build found."
+        cout error "[ERROR] No last build found."
+        exit 1
     fi
 
-    LAST_BUILD_TYPE=$(cat $BUILD_DIR/last.txt)
+    LAST_BUILD_TYPE=$(cat $BUILD_DIR/last.txt | head -n 1)
 
     io_presetup ${1}
 
@@ -69,7 +89,7 @@ function execute() {
     then
         eval python3 $BUILD_DIR/run.py $IO_ARGS
     else
-        echo "[ERROR] No last build found."
+        cout error "[ERROR] No last build found."
         exit 1
     fi
 }

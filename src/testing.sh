@@ -32,7 +32,7 @@ function testing() {
                 GREP_COLORS='ms=1;32'; echo ${LINE} | grep --color=always -e '>.*'; \
 			done;
 
-            echo $'\e[1;31mWrong Answer :('$'\e[0m'
+            cout danger "Wrong Answer :("
             printf "\nDo you want to check the mismatches? (y/n) "
             read -n 1 OPT
 
@@ -44,5 +44,5 @@ function testing() {
             exit 0
         fi
     done
-    echo $'\e[1;32mALL TESTS PASSED!'$'\e[0m'
+    cout success "ALL TESTS PASSED!"
 }

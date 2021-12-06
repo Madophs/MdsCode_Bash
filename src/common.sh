@@ -60,6 +60,25 @@ function is_digit() {
     fi
 }
 
+function cout() {
+    COLOR=$1
+    MESSAGE=$2
+    case $COLOR in
+        red|error|danger)
+        echo -e "\e[1;31m${MESSAGE} \e[0m"
+        ;;
+        green|success)
+        echo -e "\e[1;32m${MESSAGE} \e[0m"
+        ;;
+        yellow|warning)
+        echo -e "\e[1;33m${MESSAGE} \e[0m"
+        ;;
+        blue|info)
+        echo -e "\e[1;34m${MESSAGE} \e[0m"
+        ;;
+    esac
+}
+
 function display_help() {
     printf "Usage: mdscode [options] file...\n"
     printf "Options:\n"
