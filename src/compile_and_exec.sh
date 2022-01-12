@@ -107,13 +107,13 @@ function execute() {
 
     if [[ $LAST_BUILD_TYPE == "cpp" ]]
     then
-        eval $BUILD_DIR/run $IO_ARGS
+        eval time $BUILD_DIR/run $IO_ARGS
     elif [[ $LAST_BUILD_TYPE == "c" ]]
     then
-        eval $BUILD_DIR/run $IO_ARGS
+        eval time $BUILD_DIR/run $IO_ARGS
     elif [[ $LAST_BUILD_TYPE == "py" ]]
     then
-        eval python3 $BUILD_DIR/run.py $IO_ARGS
+        eval time python3 $BUILD_DIR/run.py $IO_ARGS
     else
         cout error "[ERROR] No last build found."
         exit 1

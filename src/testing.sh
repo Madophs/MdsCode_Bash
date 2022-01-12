@@ -39,7 +39,9 @@ function testing() {
             if [[ $OPT == "y" || $OPT == "Y" ]]; then
                 vimdiff $MDS_OUTPUT ${TEST_DIR}/test_output_${i}.txt
             else
-                printf "\nOk, don't worry.\n"
+                echo ""
+                cout green "Ok, don't worry."
+                echo ""
             fi
             exit 0
         fi
