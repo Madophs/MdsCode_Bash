@@ -31,17 +31,21 @@ function create_file() {
         TEMP_FILE="main_"$(date +'%s').$FILE_TYPE
         touch ${TEMP_DIR}/${TEMP_FILE}
 
-        if [[ $USE_TEMPLATE == "Y" ]]
+        if [[ -z $TEMPLATE ]]
         then
-            if [[ -z $TEMPLATE ]]
+            if [[ -f ${TEMPLATES_DIR}/default.${FILE_TYPE} ]]
             then
-                if [[ -f ${TEMPLATES_DIR}/default.${FILE_TYPE} ]]
-                then
-                    cat ${TEMPLATES_DIR}/default.${FILE_TYPE} > ${TEMP_DIR}/${TEMP_FILE}
-                else
-                    echo "[ERROR] Default ${FILE_TYPE} template not found."
-                    echo "[INFO] Creating a simple empty file."
-                fi
+                cat ${TEMPLATES_DIR}/default.${FILE_TYPE} > ${TEMP_DIR}/${TEMP_FILE}
+            else
+                cout warning "[WARNING] Default ${FILE_TYPE} template not found."
+                cout info "[INFO] Creating a simple empty file."
+            fi
+        else
+            if [[ -f ${TEMPLATES_DIR}/${TEMPLATE} ]]
+            then
+                cat ${TEMPLATES_DIR}/${TEMPLATE} > ${TEMP_DIR}/${TEMP_FILE}
+            else
+                cout warning "[WARNING] Default ${FILE_TYPE} template not found, creating an empty file"
             fi
         fi
 

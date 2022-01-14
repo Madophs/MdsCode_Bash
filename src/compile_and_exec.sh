@@ -22,7 +22,7 @@ function build_required() {
 }
 
 function build_file() {
-    if [[ $FILE_TYPE == "cpp" ]]
+    if [[ $BUILD_FILETYPE == "cpp" ]]
     then
         $CXXCOMPILER $MDS_CXX_FLAGS $FILENAME -o $BUILD_DIR/run
         if [[ $? != 0 ]]
@@ -30,7 +30,7 @@ function build_file() {
             cout error "[ERROR] Errors found during compilation..."
             exit 1
         fi
-    elif [[ $FILE_TYPE == "c" ]]
+    elif [[ $BUILD_FILETYPE == "c" ]]
     then
         $CCCOMPILER $MDS_CC_FLAGS $FILENAME -o $BUILD_DIR/run
         if [[ $? != 0 ]]
@@ -38,18 +38,18 @@ function build_file() {
             cout error "[ERROR] Errors found during compilation..."
             exit 1
         fi
-    elif [[ $FILE_TYPE == "py" ]]
+    elif [[ $BUILD_FILETYPE == "py" ]]
     then
         cp -f $FILENAME $BUILD_DIR/run
     fi
 }
 
 function build() {
-    ALLOWED_FILE_TYPES=("cpp" "py" "c" "java")
-    FILE_TYPE=$(echo $FILENAME | awk -F '.' '{print $NF}')
+    ALLOWED_BUILD_FILETYPES=("cpp" "py" "c" "java")
+    BUILD_FILETYPE=$(echo $FILENAME | awk -F '.' '{print $NF}')
 
-    IS_ALLOWED_FILE_TYPE=$(echo ${ALLOWED_FILE_TYPES} | grep -o ${FILE_TYPE})
-    if [[ -n ${IS_ALLOWED_FILE_TYPE} ]]
+    IS_ALLOWED_BUILD_FILETYPE=$(echo ${ALLOWED_BUILD_FILETYPES} | grep -o ${BUILD_FILETYPE})
+    if [[ -n ${IS_ALLOWED_BUILD_FILETYPE} ]]
     then
 
         build_required
@@ -59,7 +59,7 @@ function build() {
             cout green "Building ${FILENAME}"
             build_file
 
-            echo $FILE_TYPE > $BUILD_DIR/last.txt
+            echo $BUILD_FILETYPE > $BUILD_DIR/last.txt
             cp -p $FILENAME $TEMP_DIR/$FILENAME
             echo ${TEMP_DIR}/${FILENAME} >> $BUILD_DIR/last.txt
         fi

@@ -6,6 +6,7 @@ TEMPLATES_DIR=${RES_DIR}/templates
 FILENAME=""
 TEMP_FILE="" # Temporal file
 TEMP_DIR="/tmp/mdscode"
+TEMP_FLAGS_FILE=${TEMP_DIR}/flags
 BUILD_DIR=${SCRIPT_DIR}/build
 IO_DIR=${RES_DIR}/io
 TEST_DIR=${RES_DIR}/tests
@@ -15,6 +16,7 @@ TESTING="N"
 IO_ARGS=""
 WIDTH_1ST_OP=5
 WIDTH_2ND_OP=20
+GUI="N"
 
 # Global variables for naming conventions
 # CASETYPE
@@ -35,6 +37,12 @@ function common_setup() {
     mkdir -p ${IO_DIR}
     mkdir -p ${TEST_DIR}
     touch ${IO_DIR}/input ${IO_DIR}/output
+}
+
+function presetup_flags() {
+    if [[ -f ${TEMP_FLAGS_FILE} ]]; then
+        MDS_CXX_FLAGS=$(cat ${TEMP_FLAGS_FILE})
+    fi
 }
 
 function missing_argument_validation() {
@@ -82,12 +90,17 @@ function cout() {
 function display_help() {
     printf "Usage: mdscode [options] file...\n"
     printf "Options:\n"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -f "--file [type]" "Specify the file type (c,cpp,py,java). Default: cpp"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -n "--name [args...]" "Filename"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -b "--build [file]" "Build the given source file (c,cpp,py,java)"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -e "--exec" "Executes the previous compiled file."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -i "--io" "Choose the prevefered IO type (I,O,IO). Default: IO"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -t "--test [no tests]" "Test the last compiled bin. If a parameter is specified (optional) then asks for the tests."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -g "--gui" "Run interactive move with terminal GUI."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -h "--help" "Show this"
     printf "\nDeveloped by Jehú Jair Ruiz Villegas\n"
     printf "Contact: jehuruvj@gmail.com\n"
 }
 
+presetup_flags
 common_setup

@@ -27,6 +27,13 @@ do
             FILENAME="${2}"
             shift
             shift
+
+            while [[ -n ${1} && -z $(echo ${1} | grep '-' ) ]]
+            do
+                FILENAME="${FILENAME} ${1}"
+                shift
+            done
+            CREATION="Y"
             ;;
         -b|--build)
             missing_argument_validation ${1} ${2}
@@ -57,7 +64,13 @@ do
             shift
             ;;
         -p|--template)
-            USE_TEMPLATE="Y"
+            missing_argument_validation ${1} ${2}
+            TEMPLATE=${2}
+            shift
+            shift
+            ;;
+        -g|--gui)
+            GUI="Y"
             shift
             ;;
         -*|--*=)
