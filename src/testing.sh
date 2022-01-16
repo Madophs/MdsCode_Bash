@@ -22,15 +22,22 @@ function testing() {
         if [[ $? != 0 ]]
         then
             printf "Test #${i}\n"
+            MAX_LINES=300;
+            LINES_CONT=1
 
             # Preserve the colorful output from diff command
-			diff $MDS_OUTPUT ${TEST_DIR}/test_output_${i}.txt | xargs -L 1 -I {} echo {} | \
+            diff $MDS_OUTPUT ${TEST_DIR}/test_output_${i}.txt | xargs -L 1 -I {} echo {} | \
             while read LINE; do \
                 GREP_COLORS='ms=1;31'; echo ${LINE} | grep --color=always -e '<.*'; \
                 GREP_COLORS='ms=1;34'; echo ${LINE} | grep --color=always - ; \
                 GREP_COLORS='ms=1;37'; echo ${LINE} | grep --color=always -e '^[0-9].*' ; \
                 GREP_COLORS='ms=1;32'; echo ${LINE} | grep --color=always -e '>.*'; \
-			done;
+                LINES_CONT=$(( LINES_CONT + 1 )); \
+                if [[ ${LINES_CONT} -ge ${MAX_LINES} ]]; \
+                then \
+                    break;\
+                fi; \
+            done;
 
             cout danger "Wrong Answer :("
             printf "\nDo you want to check the mismatches? (y/n) "
