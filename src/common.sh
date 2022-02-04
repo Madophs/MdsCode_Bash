@@ -17,6 +17,8 @@ IO_ARGS=""
 WIDTH_1ST_OP=5
 WIDTH_2ND_OP=20
 GUI="N"
+SERVERNAME="Competitive"
+OPEN_FLAGS="N"
 
 # Global variables for naming conventions
 # CASETYPE
@@ -42,6 +44,19 @@ function common_setup() {
 function presetup_flags() {
     if [[ -f ${TEMP_FLAGS_FILE} ]]; then
         MDS_CXX_FLAGS=$(cat ${TEMP_FLAGS_FILE})
+    fi
+}
+
+function open_with_vim() {
+    RUNNING=$(ps -ef | grep "vim" | grep "\-\-servername ${SERVERNAME}")
+    FILE=$1
+    echo $FILE
+    echo $@
+    if [[ -n ${RUNNING} ]]
+    then
+        vim --servername ${SERVERNAME} --remote ${FILE}
+    else
+        vim --servername ${SERVERNAME} ${FILE}
     fi
 }
 
@@ -97,6 +112,7 @@ function display_help() {
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -i "--io" "Choose the prevefered IO type (I,O,IO). Default: IO"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -t "--test [no tests]" "Test the last compiled bin. If a parameter is specified (optional) then asks for the tests."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -g "--gui" "Run interactive move with terminal GUI."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" " " "--flags" "Edit current compile flags."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -h "--help" "Show this"
     printf "\nDeveloped by Jehú Jair Ruiz Villegas\n"
     printf "Contact: jehuruvj@gmail.com\n"

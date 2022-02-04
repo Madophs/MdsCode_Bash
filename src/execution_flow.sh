@@ -34,5 +34,10 @@ else
             execute
         fi
     fi
+
+    if [[ $OPEN_FLAGS == "Y" ]]
+    then
+        open_with_vim ${TEMP_FLAGS_FILE}
+    fi
 fi
 

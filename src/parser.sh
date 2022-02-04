@@ -73,6 +73,10 @@ do
             GUI="Y"
             shift
             ;;
+        --flags)
+            OPEN_FLAGS="Y"
+            shift
+            ;;
         -*|--*=)
             echo "[ERROR] Unknown argument \"${1}\""
             exit 1

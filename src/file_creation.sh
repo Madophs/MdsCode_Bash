@@ -63,15 +63,19 @@ function create_file() {
                 if [[ $DECISION == "y"  || $DECISION == "Y" ]]
                 then
                     echo "[WARNING] Replacing file."
-                    cat ${TEMP_DIR}/${TEMP_FILE} > ${FILENAME}.${FILE_TYPE}
-                    echo "[SUCCESS] File \"${FILENAME}.${FILE_TYPE}\" created successfully."
+                    FULL_FILENAME=${FILENAME}.${FILE_TYPE}
+                    cat ${TEMP_DIR}/${TEMP_FILE} > ${FULL_FILENAME}
+                    echo "[SUCCESS] File \"${FULL_FILENAME}\" replaced successfully."
+                    open_with_vim "${FULL_FILENAME}"
                 else
                     echo "[INFO] Wise choice, bye..."
                     exit 0
                 fi
             else
-                cat ${TEMP_DIR}/${TEMP_FILE} > ${FILENAME}.${FILE_TYPE}
+                FULL_FILENAME=${FILENAME}.${FILE_TYPE}
+                cat ${TEMP_DIR}/${TEMP_FILE} > ${FULL_FILENAME}
                 echo "[SUCCESS] File \"${FILENAME}.${FILE_TYPE}\" created successfully."
+                open_with_vim "${FULL_FILENAME}"
             fi
         else
             echo "[INFO] Filename not specified, file generated with a random name \"$TEMP_FILE\""
