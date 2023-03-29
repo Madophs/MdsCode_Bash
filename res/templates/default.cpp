@@ -1,15 +1,27 @@
 #include <bits/stdc++.h>
 
+using namespace std;
+
+#ifdef __MDS_DEBUG__
 template <typename Arg, typename... Args>
-void debug(std::ostream& out, Arg&& arg, Args&&... args)
+void mds_debug(std::ostream& out, Arg&& arg, Args&&... args)
 {
-    out << std::forward<Arg>(arg);
+    stringstream ss(forward<Arg>(arg));
+    vector<string> varnames;
+    for (string var; getline(ss, var, ','); varnames.push_back(var)) {
+        if (var.at(0) == ' ') var.erase(0, 1);
+    }
+    int index = 0;
     using expander = int[];
-    (void)expander{0, (void(out << " " << std::forward<Args>(args)), 0)...};
+    (void)expander{0, (void(out << varnames[index++] << " = " << std::forward<Args>(args) << ", "), 0)...};
     out << std::endl;
 }
+#define debug(...) mds_debug(cout, #__VA_ARGS__, __VA_ARGS__);
+#else
+#define debug(...)
+#endif
 
-using namespace std;
+/******************    START_CODING   ******************/
 
 int main()
 {

@@ -1,11 +1,11 @@
 #!/bin/bash
 
 CPPSTD="-std=c++17"
-CPPFLAGS=" -Wall -Wextra -fsanitize=address -fsanitize=undefined -fsanitize=float-cast-overflow -fsanitize=leak"
+CPPFLAGS=" -Wall -Wextra -D__MDS_DEBUG__ -fsanitize=address -fsanitize=undefined -fsanitize=float-cast-overflow -fsanitize=leak"
 
 AVAIL_FLAGS=(-O3 -Wall -pipe -pthread -Wextra -g -fsanitize=address \
     -fsanitize=undefined -fsanitize=float-cast-overflow \
-    -fsanitize=leak)
+    -fsanitize=leak -D__MDS_DEBUG__)
 
 MENU_CPP_FLAGS=()
 CANCEL="NO"
