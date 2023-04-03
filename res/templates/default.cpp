@@ -11,12 +11,9 @@ void mds_debug(std::ostream& out, Arg&& arg, Args&&... args)
     for (string var; getline(ss, var, ','); varnames.push_back(var)) {
         if (var.at(0) == ' ') var.erase(0, 1);
     }
-    int index = 0;
-    out << "Debug: ";
-    for (auto param: {args...}) {
-        if (index) out << ", ";
-        out << varnames[index++] << " = " << param;
-    }
+    using expander = int[];
+    uint32_t index = 0;
+    (void)expander{0, (void(out << (index ? ", " : "Debug: ") << varnames[index++] << " = " << std::forward<Args>(args)), 0)...};
     out << std::endl;
 }
 #define debug(...) mds_debug(cerr, #__VA_ARGS__, __VA_ARGS__);
