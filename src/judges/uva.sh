@@ -4,6 +4,7 @@ UVA_BASE_URL="https://onlinejudge.org"
 UVA_INDEX_URL=${UVA_BASE_URL}/index.php
 UVA_LOGIN_URL="${UVA_INDEX_URL}?option=com_comprofiler&task=login"
 UVA_COOKIES_FILE=${BUILD_DIR}/uva_cookies
+UVA_SUBMIT_URL="${UVA_INDEX_URL}?option=com_onlinejudge&Itemid=25&page=save_submission"
 
 function get_uva_hidden_params() {
     curl -f -L -s  ${UVA_BASE_URL} | grep -B8 'id=\"mod_login_remember\"' | awk '{print $3  $4}' | grep -v 'remember' | awk -F '[=\"]' '{print $3"="$6}' | tr '\n' '\&' | sed 's/\&$/\&remember=yes/g'
@@ -51,6 +52,50 @@ function uva_try_login() {
     fi
 }
 
+function uva_get_problem_id() {
+    echo $1 | grep -o -e '[0-9]*\.' | sed 's/.$//g'
+}
+
+function uva_get_lang_id() {
+    UVA_LANG=$(echo $1 | egrep -o -e 'cpp$|py$|rs$|c$|java$')
+    case ${UVA_LANG} in
+        c)
+            echo 1
+            ;;
+        java)
+            echo 2
+            ;;
+        cpp)
+            echo 5
+            ;;
+        py)
+            echo 6
+            ;;
+        *)
+            cout danger "Unknown language ${UVA_LANG}"
+            exit 1
+            ;;
+    esac
+}
+
 function uva_submit() {
     uva_try_login
+
+    if [[ -z ${SOURCE_FILE} ]]
+    then
+        source ${BUILD_INFO}
+    fi
+
+    PROBLEM_ID=$(uva_get_problem_id ${SOURCE_FILE})
+    LANGUAGE_ID=$(uva_get_lang_id ${SOURCE_FILE})
+
+    curl -X POST -f -L -s -w '%{url_effective}' --compressed --cookie ${UVA_COOKIES_FILE} --cookie-jar ${UVA_COOKIES_FILE} -H "Content-Type: multipart/form-data" \
+        -F localid=${PROBLEM_ID}  -F language=${LANGUAGE_ID} -F "codeupl=@${SOURCE_FILE}" ${UVA_SUBMIT_URL} &> /dev/null
+
+    if [[ $(any_error $?) == "NO" ]]
+    then
+        cout success "File uploaded!!!"
+    else
+        cout danger "Something went wrong :("
+    fi
 }
