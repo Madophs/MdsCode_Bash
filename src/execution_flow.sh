@@ -4,6 +4,7 @@ source $SRC_DIR/file_creation.sh
 source $SRC_DIR/testing.sh
 source $SRC_DIR/compile_and_exec.sh
 source $SRC_DIR/interactive_mode.sh
+source $SRC_DIR/submit.sh
 
 if [[ $GUI == "Y" ]]
 then
@@ -38,6 +39,11 @@ else
     if [[ $OPEN_FLAGS == "Y" ]]
     then
         open_with_vim ${TEMP_FLAGS_FILE}
+    fi
+
+    if [[ $SUBMIT == "Y" ]]
+    then
+        submit_code
     fi
 fi
 

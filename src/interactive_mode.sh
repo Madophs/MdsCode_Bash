@@ -231,7 +231,7 @@ function start_gui() {
     then
         export_flags
         # Let's keep simple and run the command again with the params
-        ${SCRIPT_DIR}/mdscode -n $FILENAME -f $FILE_TYPE -p $TEMPLATE
+        ${SCRIPT_DIR}/mdscode -n "${FILENAME}" -f $FILE_TYPE -p $TEMPLATE
     fi
 }
 

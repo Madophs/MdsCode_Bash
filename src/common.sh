@@ -8,6 +8,7 @@ TEMP_FILE="" # Temporal file
 TEMP_DIR="/tmp/mdscode"
 TEMP_FLAGS_FILE=${TEMP_DIR}/flags
 BUILD_DIR=${SCRIPT_DIR}/build
+BUILD_INFO=${BUILD_DIR}/last.txt
 IO_DIR=${RES_DIR}/io
 TEST_DIR=${RES_DIR}/tests
 NO_TEST=0
@@ -19,6 +20,8 @@ WIDTH_2ND_OP=20
 GUI="N"
 SERVERNAME="Competitive"
 OPEN_FLAGS="N"
+SUBMIT="N"
+ALLOWED_BUILD_FILETYPES=("cpp" "py" "c" "java")
 
 # Global variables for naming conventions
 # CASETYPE
@@ -73,13 +76,34 @@ function missing_argument_validation() {
     fi
 }
 
+function any_error() {
+    CMD_OUTPUT=$1
+    if [[ ${CMD_OUTPUT} == 0 ]]
+    then
+        echo "NO"
+    else
+        echo "YES"
+    fi
+}
+
 function is_digit() {
     ARG=${1}
 	grep -o -e '^[0-9]*$' <(echo ${ARG}) &> /dev/null
-    if [[ $? != 0 ]]
+    if [[ $(any_error $?) == "YES" ]]
     then
         echo "[ERROR] Invalid value ${ARG}"
         exit 1
+    fi
+}
+
+function set_var() {
+    VARNAME=$1
+    DEFAULT_VALUE=$2
+
+    env | grep ${VARNAME} &> /dev/null
+    if [[ $(any_error $?) == "YES" ]]
+    then
+        export ${VARNAME}=${DEFAULT_VALUE}
     fi
 }
 
@@ -118,5 +142,10 @@ function display_help() {
     printf "Contact: jehuruvj@gmail.com\n"
 }
 
+function init_vars() {
+    set_var ONLINE_JUDGE UVA # UVA Online Judge
+}
+
 presetup_flags
 common_setup
+init_vars

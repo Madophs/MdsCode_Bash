@@ -73,6 +73,15 @@ do
             GUI="Y"
             shift
             ;;
+        -s|--submit)
+            SUBMIT="Y"
+            if [[ -n ${2} ]]
+            then
+                SOURCE_FILE=${2}
+                shift
+            fi
+            shift
+            ;;
         --flags)
             OPEN_FLAGS="Y"
             shift

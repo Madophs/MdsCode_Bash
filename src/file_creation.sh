@@ -2,7 +2,7 @@
 
 function apply_naming_convention() {
     # Remove weird characters
-    FILENAME=$(sed 's/[^a-zA-Z 0-9]//g' <(echo $FILENAME))
+    FILENAME=$(sed 's/[^a-zA-Z 0-9\-]//g' <(echo $FILENAME))
 
     # Replacing non-english characters
     FILENAME=$(sed 's/á/a/g;s/é/e/g;s/í/i/g;s/ó/o/g;s/ú/u/g;s/ü/u/g;s/ñ/n/g' <(echo $FILENAME))
@@ -21,7 +21,7 @@ function apply_naming_convention() {
         echo "[ERROR] Unknown casetype [${CASETYPE}]"
     fi
 
-    FILENAME=$(sed "s/ /${WHITESPACE_REPLACE}/g" <(echo $FILENAME))
+    FILENAME=$(sed "s/ /${WHITESPACE_REPLACE}/g;s/-/${WHITESPACE_REPLACE}/g" <(echo $FILENAME))
 }
 
 function create_file() {

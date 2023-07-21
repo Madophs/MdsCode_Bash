@@ -3,11 +3,11 @@
 BUILD_REQUIRED="Y"
 
 function build_required() {
-    if [[ -f ${BUILD_DIR}/last.txt ]]
+    if [[ -f ${BUILD_INFO} ]]
     then
-        LAST_FILE_BUILT=$(cat $BUILD_DIR/last.txt | tail -n 1 | awk -F '/' '{print $NF}')
+        source ${BUILD_INFO} # Last SOURCE_FILE built
         CURRENT_FILE=$(echo ${FILENAME} | tail -n 1 | awk -F '/' '{print $NF}')
-        if [[ "${CURRENT_FILE}" == "${LAST_FILE_BUILT}" ]]
+        if [[ "${CURRENT_FILE}" == "${SOURCE_FILE}" ]]
         then
             BINARY=${BUILD_DIR}/run
             FILE_LAST_TIME_WRITTEN=$(ls -l --time-style full-iso ${FILENAME} | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
@@ -45,13 +45,11 @@ function build_file() {
 }
 
 function build() {
-    ALLOWED_BUILD_FILETYPES=("cpp" "py" "c" "java")
     BUILD_FILETYPE=$(echo $FILENAME | awk -F '.' '{print $NF}')
 
     IS_ALLOWED_BUILD_FILETYPE=$(echo ${ALLOWED_BUILD_FILETYPES} | grep -o ${BUILD_FILETYPE})
     if [[ -n ${IS_ALLOWED_BUILD_FILETYPE} ]]
     then
-
         build_required
 
         if [[ ${BUILD_REQUIRED} = "Y" ]]
@@ -59,13 +57,13 @@ function build() {
             cout green "Building ${FILENAME}"
             build_file
 
-            echo $BUILD_FILETYPE > $BUILD_DIR/last.txt
-            cp -p $FILENAME $TEMP_DIR/$FILENAME
-            echo ${TEMP_DIR}/${FILENAME} >> $BUILD_DIR/last.txt
+            echo LANG=\"${BUILD_FILETYPE}\" > ${BUILD_INFO}
+            cp -p ${FILENAME} ${TEMP_DIR}/${FILENAME}
+            echo SOURCE_FILE=\"${TEMP_DIR}/${FILENAME}\" >> ${BUILD_INFO}
         fi
     else
         # If we are trying to build a different file from mention aboved, let's built the file found in last.txt
-        if [[ -f ${BUILD_DIR}/last.txt ]]
+        if [[ -f ${BUILD_INFO} ]]
         then
             cout warning "[WARNING] Filetype not allowed, skipping building stage."
         fi
@@ -95,23 +93,23 @@ function io_presetup() {
 }
 
 function execute() {
-    if [[ ! -f $BUILD_DIR/last.txt ]]
+    if [[ ! -f ${BUILD_INFO} ]]
     then
         cout error "[ERROR] No last build found."
         exit 1
     fi
 
-    LAST_BUILD_TYPE=$(cat $BUILD_DIR/last.txt | head -n 1)
+    source ${BUILD_INFO}
 
     io_presetup ${1}
 
-    if [[ $LAST_BUILD_TYPE == "cpp" ]]
+    if [[ $LANG == "cpp" ]]
     then
         eval time $BUILD_DIR/run $IO_ARGS
-    elif [[ $LAST_BUILD_TYPE == "c" ]]
+    elif [[ $LANG == "c" ]]
     then
         eval time $BUILD_DIR/run $IO_ARGS
-    elif [[ $LAST_BUILD_TYPE == "py" ]]
+    elif [[ $LANG == "py" ]]
     then
         eval time python3 $BUILD_DIR/run.py $IO_ARGS
     else
