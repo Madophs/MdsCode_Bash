@@ -6,7 +6,8 @@ function build_required() {
     if [[ -f ${BUILD_INFO} ]]
     then
         source ${BUILD_INFO} # Last SOURCE_FILE built
-        CURRENT_FILE=$(echo ${FILENAME} | tail -n 1 | awk -F '/' '{print $NF}')
+        SOURCE_FILE=$(echo ${SOURCE_FILE} | awk -F '/' '{print $NF}')
+        CURRENT_FILE=$(echo ${FILENAME} | awk -F '/' '{print $NF}')
         if [[ "${CURRENT_FILE}" == "${SOURCE_FILE}" ]]
         then
             BINARY=${BUILD_DIR}/run
