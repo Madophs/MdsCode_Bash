@@ -63,6 +63,12 @@ do
             fi
             shift
             ;;
+        --set-test)
+            missing_argument_validation ${1} ${2}
+            SET_TEST=${2}
+            shift
+            shift
+            ;;
         -p|--template)
             missing_argument_validation ${1} ${2}
             TEMPLATE=${2}

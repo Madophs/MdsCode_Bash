@@ -12,6 +12,17 @@ function set_test() {
     done
 }
 
+function set_nth_test_as_input() {
+    TARGET_TEST=${TEST_DIR}/test_input_${SET_TEST}.txt
+    echo ${TARGET_TEST}
+    if [[ -f ${TARGET_TEST} ]]
+    then
+        cat ${TARGET_TEST} > ${MDS_INPUT}
+    else
+        cout danger "[ERROR] Test not found."
+    fi
+}
+
 function testing() {
     NO_TEST=$(( $(ls -l ${TEST_DIR}/test*txt | wc -l) / 2 ))
 

@@ -26,6 +26,11 @@ else
         set_test
     fi
 
+    if [[ $SET_TEST != "-1" ]]
+    then
+        set_nth_test_as_input
+    fi
+
     if [[ $EXECUTION == "Y" ]]
     then
         if [[ $TESTING == "Y" ]]

@@ -12,6 +12,7 @@ BUILD_INFO=${BUILD_DIR}/last.txt
 IO_DIR=${RES_DIR}/io
 TEST_DIR=${RES_DIR}/tests
 NO_TEST=0
+SET_TEST="-1"
 CREATE_TESTS="N"
 TESTING="N"
 IO_ARGS=""
@@ -135,6 +136,7 @@ function display_help() {
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -e "--exec" "Executes the previous compiled file."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -i "--io" "Choose the prevefered IO type (I,O,IO). Default: IO"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -t "--test [no tests]" "Test the last compiled bin. If a parameter is specified (optional) then asks for the tests."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--set-test [no test]" "Sets the input of the Nth test as input of \$MDS_INPUT."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -g "--gui" "Run interactive move with terminal GUI."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -s "--submit " "Submit last built file."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--flags" "Edit current compile flags."
