@@ -2,6 +2,7 @@
 
 SRC_DIR=${SCRIPT_DIR}/src
 RES_DIR=${SCRIPT_DIR}/res
+CXXINCLUDE_DIR=${RES_DIR}/include/
 TEMPLATES_DIR=${RES_DIR}/templates
 FILENAME=""
 TEMP_FILE="" # Temporal file
@@ -33,7 +34,7 @@ WHITESPACE_REPLACE="_"
 
 # C/C++ variables
 CXXCOMPILER="g++"
-MDS_CXX_FLAGS="-std=c++17 -O0 -Wall -Wextra -g"
+MDS_CXX_FLAGS="-std=c++17 -O0 -Wall -Wextra -g -D__MDS_DEBUG__"
 CCCOMPILER="gcc"
 MDS_CC_FLAGS="-Wall -Wextra -g"
 
@@ -54,8 +55,6 @@ function presetup_flags() {
 function open_with_vim() {
     RUNNING=$(ps -ef | grep "vim" | grep "\-\-servername ${SERVERNAME}")
     FILE=$1
-    echo $FILE
-    echo $@
     if [[ -n ${RUNNING} ]]
     then
         vim --servername ${SERVERNAME} --remote ${FILE}

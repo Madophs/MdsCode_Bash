@@ -25,7 +25,7 @@ function build_required() {
 function build_file() {
     if [[ $BUILD_FILETYPE == "cpp" ]]
     then
-        $CXXCOMPILER $MDS_CXX_FLAGS $FILENAME -o $BUILD_DIR/run
+        $CXXCOMPILER $MDS_CXX_FLAGS -I$CXXINCLUDE_DIR $FILENAME -o $BUILD_DIR/run
         if [[ $? != 0 ]]
         then
             cout error "[ERROR] Errors found during compilation..."
