@@ -98,4 +98,4 @@ void mds_debug(std::ostream& out, int line_number, Arg&& arg, Args&&... args)
     mds_debug(out, varnames.begin(), std::forward<Args>(args)...);
 }
 
-#define debug(...) mds_debug(cerr, __LINE__, #__VA_ARGS__, __VA_ARGS__);
+#define debug(...) mds_debug(std::cerr, __LINE__, #__VA_ARGS__, __VA_ARGS__);
