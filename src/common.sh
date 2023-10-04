@@ -49,6 +49,8 @@ function common_setup() {
 function presetup_flags() {
     if [[ -f ${TEMP_FLAGS_FILE} ]]; then
         MDS_CXX_FLAGS=$(cat ${TEMP_FLAGS_FILE})
+    else
+        echo ${MDS_CXX_FLAGS} > ${TEMP_FLAGS_FILE}
     fi
 }
 

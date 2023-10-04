@@ -41,16 +41,22 @@ inline bool mds_is_string(Variable&& variable)
 }
 
 template <typename AnyType>
-inline void mds_print_vec(std::ostream& out, AnyType&& vec)
+void mds_print_item(std::ostream& out, AnyType&& value)
 {
-    out << vec << ", ";
+    out << value << ", ";
+}
+
+template <typename Type1, typename Type2>
+void mds_print_item(std::ostream& out, std::pair<Type1, Type2> value)
+{
+    out << " (" << value.first << "," << value.second << ")";
 }
 
 template <typename VectorType>
-inline void mds_print_vec(std::ostream& out, std::vector<VectorType> vec)
+void mds_print_item(std::ostream& out, std::vector<VectorType> vec)
 {
     for (uint32_t i = 0u; i < vec.size(); ++i) {
-        mds_print_vec(out, vec[i]);
+        mds_print_item(out, vec[i]);
     }
     out << '\n';
 }
@@ -59,11 +65,11 @@ template <typename Value>
 void mds_print_vars(std::ostream& out, const std::string& varname, Value&& value)
 {
     if (mds_string_is_rvalue(varname)) {
-        out << varname.substr(1, varname.size()-2) << ", ";
+        out << varname.substr(1, varname.size()-2) << " ";
     } else if (mds_is_string(value)) {
         out << varname << " = \"" << value << "\", ";
     } else {
-        out << varname << " = " << value << ", ";
+        out << std::boolalpha << varname << " = " << value << ", ";
     }
 }
 
@@ -71,7 +77,15 @@ template <typename VectorType>
 void mds_print_vars(std::ostream& out, const std::string& varname, std::vector<VectorType> vec)
 {
     out << "\nVector [" << varname << "]\n";
-    mds_print_vec(out, vec);
+    mds_print_item(out, vec);
+}
+
+template <typename Value1, typename Value2>
+void mds_print_vars(std::ostream& out, const std::string& varname, std::pair<Value1, Value2> item)
+{
+    out << varname;
+    mds_print_item(out, item);
+    out << ", ";
 }
 
 inline void mds_debug(std::ostream& out, __attribute_maybe_unused__ std::vector<std::string>::const_iterator varnames)
