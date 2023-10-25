@@ -79,13 +79,13 @@ function io_presetup() {
     else
         if [[ $IO_TYPE == "IO" ]]
         then
-            IO_ARGS=" < ${IO_DIR}/input &> ${IO_DIR}/output"
+            IO_ARGS=" < ${IO_DIR}/input ${REDIRECT_OP} ${IO_DIR}/output"
         elif [[ $IO_TYPE == "I" ]]
         then
             IO_ARGS=" < ${IO_DIR}/input"
         elif [[ $IO_TYPE == "O" ]]
         then
-            IO_ARGS=" &> ${IO_DIR}/output"
+            IO_ARGS=" ${REDIRECT_OP} ${IO_DIR}/output"
         elif [[ $IO_TYPE != "N" ]]
         then
             cout error "[ERROR] Unknown IO type: ${IO_TYPE}."

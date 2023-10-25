@@ -46,6 +46,11 @@ do
             EXECUTION="Y"
             shift
             ;;
+        --exer)
+            EXECUTION="Y"
+            REDIRECT_OP=">"
+            shift
+            ;;
         -i|--io)
             missing_argument_validation ${1} ${2}
             IO_TYPE=$(echo ${2} | tr '[:lower:]' '[:upper:]')
@@ -53,14 +58,29 @@ do
             shift
             ;;
         -t|--test)
-            if [[ ! -z ${2} ]]; then
-                NO_TEST=${2}
-                CREATE_TESTS="Y"
+            TESTING="Y"
+            EXECUTION="Y"
+            if [[ -n ${2} && $(is_cmd_option ${2}) == "NO" ]]
+            then
+                CWSRC_FILE=${2}
                 shift
             else
-                TESTING="Y"
-                EXECUTION="Y"
+                CWSRC_FILE=$(get_last_source_file)
             fi
+            shift
+            ;;
+        -a|--add)
+            missing_argument_validation ${1} ${2}
+            NO_TEST=${2}
+            CREATE_TESTS="Y"
+            if [[ -n ${3} && $(is_cmd_option ${3}) == "NO" ]]
+            then
+                CWSRC_FILE=${3}
+                shift
+            else
+                CWSRC_FILE=$(get_last_source_file)
+            fi
+            shift
             shift
             ;;
         --set-test)

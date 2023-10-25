@@ -65,13 +65,29 @@ function open_with_vim() {
     fi
 }
 
+function get_last_source_file() {
+    source ${BUILD_INFO}
+    RET=$(echo ${SOURCE_FILE} | awk -F '/' '{print $NF}')
+    echo ${RET}
+}
+
+function is_cmd_option() {
+    ARG=${1}
+    if [[ -n $(echo ${ARG} | grep -e '^-') ]]
+    then
+        echo "YES"
+    else
+        echo "NO"
+    fi
+}
+
 function missing_argument_validation() {
     ARG=${1}
     if [[ -z ${2} ]]
     then
         echo "[ERROR] missing argument for \"${ARG}\""
         exit 1
-    elif [[ -n $(echo ${2} | grep -e "^-") ]]
+    elif [[ $(is_cmd_option ${2}) == "YES" ]]
     then
         echo "[ERROR] Invalid argument \"${2}\""
         exit 1
@@ -134,11 +150,13 @@ function display_help() {
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -f "--file [type]" "Specify the file type (c,cpp,py,java). Default: cpp"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -n "--name [args...]" "Filename"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -b "--build [file]" "Build the given source file (c,cpp,py,java)"
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -e "--exec" "Executes the previous compiled file."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -e "--exec" "Executes last compiled file."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--exer" "Executes last compiled file without redirecting errors to output file."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -i "--io" "Choose the prevefered IO type (I,O,IO). Default: IO"
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -t "--test [no tests]" "Test the last compiled bin. If a parameter is specified (optional) then asks for the tests."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -t "--test" "Test last compiled bin"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -a "--add [no tests] [src file]" "Add a test case for the specified src file (if not specified last src file compiled will be taken)."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--set-test [no test]" "Sets the input of the Nth test as input of \$MDS_INPUT."
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -g "--gui" "Run interactive move with terminal GUI."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -g "--gui" "Run interactive mode with terminal GUI."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -s "--submit " "Submit last built file."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--flags" "Edit current compile flags."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -h "--help" "Show this"
@@ -150,6 +168,8 @@ function init_vars() {
     set_var ONLINE_JUDGE UVA # UVA Online Judge
 }
 
-presetup_flags
-common_setup
-init_vars
+function init() {
+    presetup_flags
+    common_setup
+    init_vars
+}

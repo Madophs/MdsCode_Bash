@@ -5,6 +5,7 @@ SRC_DIR=${SCRIPT_DIR}/src
 
 # Common variables and utility functions
 source ${SRC_DIR}/common.sh
+init
 
 # Parse the args
 source ${SRC_DIR}/parser.sh

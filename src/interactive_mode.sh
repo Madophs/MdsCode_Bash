@@ -11,6 +11,9 @@ MENU_CPP_FLAGS=()
 CANCEL="NO"
 MENU_CPP_TEMPLATES=()
 
+TEST_CASES_SET=("New test" "" "Go back" "")
+TEST_CASES_ARE_SET="NO"
+
 function is_vim_the_father() {
     CHILD=$(ps $$ | tail -n 1 | awk '{print $1}')
     PARENT=
@@ -75,6 +78,7 @@ function input_file_name() {
         cout error "Exiting: you didn't specified a filename."
         exit 1
     fi
+    apply_naming_convention
 }
 
 function menu_cpp_version() {
@@ -145,11 +149,70 @@ function menu_cpp_templates() {
     fi
 }
 
+function load_test_cases() {
+    TEST_SRC_FOLDER=${TEST_DIR}/${1}
+    if [[ ! -d ${TEST_SRC_FOLDER} ]]
+    then
+        return
+    fi
+    TEST_CASES_LIST=($(ls -l ${TEST_SRC_FOLDER} | tail -n +2 | awk '{print $NF}' | grep -o -e '[0-9]*' | sort | uniq | paste -s -d ' '))
+    TEST_CASES_SET=()
+    for (( i=0; i < ${#TEST_CASES_LIST[@]}; i+=1 ))
+    do
+        TEST_CASES_SET+=("Test ${TEST_CASES_LIST[${i}]}")
+        TEST_CASES_SET+=("")
+        TEST_CASES_ARE_SET="YES"
+    done
+    TEST_CASES_SET+=("New test" "")
+    TEST_CASES_SET+=("Go back" "")
+}
+
+function delete_test() {
+    TEST_SRC_FOLDER=${TEST_DIR}/${1}
+    TO_DELETE=${3}
+    whiptail --title "Delete test case" --yesno --defaultno "Are you sure to delete Test #${TO_DELETE}?" 20 60 3>&1 1>&2 2>&3
+    STATUS=$?
+    if [[ ${STATUS} == 0 ]]
+    then
+        rm -f ${TEST_SRC_FOLDER}/test_input_${TO_DELETE}.txt &> /dev/null
+        rm -f ${TEST_SRC_FOLDER}/test_output_${TO_DELETE}.txt &> /dev/null
+        load_test_cases "${1}"
+        align_tests "${TEST_SRC_FOLDER}"
+    fi
+}
+
+function test_cases_setup_menu() {
+    SRC_FOLDER_NAME=${FILENAME}_${FILE_TYPE}
+    TESTCASE_CHOICE=$(whiptail --title "Test cases" --menu -- "" 18 100 10 "${TEST_CASES_SET[@]}" 3>&1 1>&2 2>&3)
+
+    STATUS=$?
+    if [[ ${STATUS} == 1 ]]
+    then
+        CANCEL="YES"
+    else
+        case ${TESTCASE_CHOICE} in
+            "New test")
+                mdscode -a 1 "${FILENAME}.${FILE_TYPE}"
+                load_test_cases ${SRC_FOLDER_NAME}
+                test_cases_setup_menu
+            ;;
+            "Go back")
+                menu_cpp_setup
+            ;;
+            *)
+                delete_test ${SRC_FOLDER_NAME} ${TESTCASE_CHOICE}
+                test_cases_setup_menu
+            ;;
+        esac
+    fi
+}
+
 function menu_cpp_setup() {
     CHOICE_CPP_SETUP=$(whiptail --title "C++ Setup" --menu -- "" 18 200 10 \
     "C++ Standard " "${CPPSTD}" \
     "Compile flags " "${CPPSTD}${CPPFLAGS}" \
     "Template" "${TEMPLATE}" \
+    "Add test cases" "${TEST_CASES_ARE_SET}" \
     "Continue" "" 3>&1 1>&2 2>&3)
 
     if [ -z "$CHOICE_CPP_SETUP" ]; then
@@ -164,6 +227,9 @@ function menu_cpp_setup() {
             ;;
             "Template")
                 menu_cpp_templates
+            ;;
+            "Add test cases")
+                test_cases_setup_menu
             ;;
         esac
     fi
@@ -191,6 +257,18 @@ function set_filetype() {
         "C++")
             FILE_TYPE="cpp"
         ;;
+        "C Language")
+            FILE_TYPE="c"
+        ;;
+        "Java")
+            FILE_TYPE="java"
+        ;;
+        "Python")
+            FILE_TYPE="py"
+        ;;
+        "Rust")
+            FILE_TYPE="rs"
+        ;;
     esac
 }
 
@@ -205,8 +283,10 @@ function menu_create_file() {
     if [ -z "$LANGUAGE" ]; then
         CANCEL="YES"
     else
+        preload
         input_file_name
         set_filetype
+        load_test_cases "${FILENAME}_${FILE_TYPE}"
         set_default_template
         menu_language_flags
     fi
@@ -216,13 +296,17 @@ function export_flags() {
     echo "${CPPSTD}${CPPFLAGS}" > ${TEMP_FLAGS_FILE}
 }
 
+function preload() {
+    if [[ ${FILE_TYPE} == "cpp" ]]
+    then
+        preload_cpp_flags
+        preload_cpp_templates
+    fi
+}
+
 function start_gui() {
-    FILE_TYPE="cpp"
-
+    clear
     set_newt_colors
-    preload_cpp_templates
-    preload_cpp_flags
-
     menu_create_file
 
     GUI="N"
