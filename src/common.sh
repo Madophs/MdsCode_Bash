@@ -18,7 +18,7 @@ CREATE_TESTS="N"
 TESTING="N"
 IO_ARGS=""
 WIDTH_1ST_OP=5
-WIDTH_2ND_OP=20
+WIDTH_2ND_OP=28
 GUI="N"
 SERVERNAME="Competitive"
 OPEN_FLAGS="N"
@@ -85,12 +85,10 @@ function missing_argument_validation() {
     ARG=${1}
     if [[ -z ${2} ]]
     then
-        echo "[ERROR] missing argument for \"${ARG}\""
-        exit 1
+        cout error "Missing argument for \"${ARG}\""
     elif [[ $(is_cmd_option ${2}) == "YES" ]]
     then
-        echo "[ERROR] Invalid argument \"${2}\""
-        exit 1
+        cout error "Invalid argument \"${2}\""
     fi
 }
 
@@ -109,8 +107,7 @@ function is_digit() {
 	grep -o -e '^[0-9]*$' <(echo ${ARG}) &> /dev/null
     if [[ $(any_error $?) == "YES" ]]
     then
-        echo "[ERROR] Invalid value ${ARG}"
-        exit 1
+        cout error "Invalid value ${ARG}"
     fi
 }
 
@@ -130,16 +127,17 @@ function cout() {
     MESSAGE=$2
     case $COLOR in
         red|error|danger)
-        echo -e "\e[1;31m${MESSAGE} \e[0m"
+        echo -e "\e[1;31m[ERROR]\e[0m ${MESSAGE}"
+        exit 1
         ;;
         green|success)
-        echo -e "\e[1;32m${MESSAGE} \e[0m"
+        echo -e "\e[1;32m[SUCCESS]\e[0m ${MESSAGE}"
         ;;
         yellow|warning)
-        echo -e "\e[1;33m${MESSAGE} \e[0m"
+        echo -e "\e[1;33m[WARNING]\e[0m ${MESSAGE}"
         ;;
         blue|info)
-        echo -e "\e[1;34m${MESSAGE} \e[0m"
+        echo -e "\e[1;34m[INFO]\e[0m ${MESSAGE}"
         ;;
     esac
 }
@@ -154,8 +152,8 @@ function display_help() {
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--exer" "Executes last compiled file without redirecting errors to output file."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -i "--io" "Choose the prevefered IO type (I,O,IO). Default: IO"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -t "--test" "Test last compiled bin"
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -a "--add [no tests] [src file]" "Add a test case for the specified src file (if not specified last src file compiled will be taken)."
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--set-test [no test]" "Sets the input of the Nth test as input of \$MDS_INPUT."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -a "--add [no tests] [src file]" "Add a test case for the specified src file (if not specified, last src file compiled will be taken)."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--set-test [nth test]" "Sets the input of the Nth test as input of \$MDS_INPUT."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -g "--gui" "Run interactive mode with terminal GUI."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -s "--submit " "Submit last built file."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--flags" "Edit current compile flags."

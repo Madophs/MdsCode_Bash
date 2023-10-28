@@ -18,7 +18,7 @@ function apply_naming_convention() {
     then
         FILENAME=$(echo $FILENAME | tr '[:upper:]' '[:lower:]')
     else
-        echo "[ERROR] Unknown casetype [${CASETYPE}]"
+        cout error "Unknown casetype [${CASETYPE}]"
     fi
 
     FILENAME=$(sed "s/ /${WHITESPACE_REPLACE}/g;s/-/${WHITESPACE_REPLACE}/g" <(echo $FILENAME))
@@ -37,15 +37,15 @@ function create_file() {
             then
                 cat ${TEMPLATES_DIR}/default.${FILE_TYPE} > ${TEMP_DIR}/${TEMP_FILE}
             else
-                cout warning "[WARNING] Default ${FILE_TYPE} template not found."
-                cout info "[INFO] Creating a simple empty file."
+                cout warning "Default ${FILE_TYPE} template not found."
+                cout info "Creating a simple empty file."
             fi
         else
             if [[ -f ${TEMPLATES_DIR}/${TEMPLATE} ]]
             then
                 cat ${TEMPLATES_DIR}/${TEMPLATE} > ${TEMP_DIR}/${TEMP_FILE}
             else
-                cout warning "[WARNING] Default ${FILE_TYPE} template not found, creating an empty file"
+                cout warning "Default ${FILE_TYPE} template not found, creating an empty file"
             fi
         fi
 
@@ -57,28 +57,28 @@ function create_file() {
             ls -f ${FILENAME}.${FILE_TYPE} &> /dev/null
             if [[ $? == 0 ]]
             then
-                echo "[INFO] File ${FILENAME}.${FILE_TYPE} already exists."
-                echo "Replace? (Y/N)"
+                cout warning "File ${FILENAME}.${FILE_TYPE} already exists."
+                cout info "Replace? (Y/N)"
                 read DECISION
                 if [[ $DECISION == "y"  || $DECISION == "Y" ]]
                 then
-                    echo "[WARNING] Replacing file."
+                    cout warning "Replacing file."
                     FULL_FILENAME=${FILENAME}.${FILE_TYPE}
                     cat ${TEMP_DIR}/${TEMP_FILE} > ${FULL_FILENAME}
-                    echo "[SUCCESS] File \"${FULL_FILENAME}\" replaced successfully."
+                    cout success "File \"${FULL_FILENAME}\" replaced successfully."
                     open_with_vim "${FULL_FILENAME}"
                 else
-                    echo "[INFO] Wise choice, bye..."
+                    cout info "Wise choice, bye..."
                     exit 0
                 fi
             else
                 FULL_FILENAME=${FILENAME}.${FILE_TYPE}
                 cat ${TEMP_DIR}/${TEMP_FILE} > ${FULL_FILENAME}
-                echo "[SUCCESS] File \"${FILENAME}.${FILE_TYPE}\" created successfully."
+                cout success "File \"${FILENAME}.${FILE_TYPE}\" created successfully."
                 open_with_vim "${FULL_FILENAME}"
             fi
         else
-            echo "[INFO] Filename not specified, file generated with a random name \"$TEMP_FILE\""
+            cout warning "Filename not specified, file generated with a random name \"$TEMP_FILE\""
             cp ${TEMP_DIR}/${TEMP_FILE} .
         fi
     fi

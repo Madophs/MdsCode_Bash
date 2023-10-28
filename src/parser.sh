@@ -4,7 +4,7 @@ source ${SRC_DIR}/args_flags.sh
 
 if [[ $# == 0 ]]
 then
-    echo "[INFO] No parameters specified"
+    cout warning "No parameters specified"
     exit 0
 fi
 
@@ -12,7 +12,6 @@ while (( $# ))
 do
     case $1 in
         -h|--help)
-            echo "[INFO] Display help"
             display_help
             exit 0
             ;;
@@ -113,12 +112,11 @@ do
             shift
             ;;
         -*|--*=)
-            echo "[ERROR] Unknown argument \"${1}\""
-            exit 1
+            cout error "Unknown option \"${1}\""
             shift
             ;;
         *)
-            echo "[INFO] ${1}"
+            cout error "Unknown argument ${1}"
             shift
             ;;
     esac

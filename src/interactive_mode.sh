@@ -68,7 +68,6 @@ function set_newt_colors() {
 if [[ ! -x $(which whiptail) ]]
 then
     cout error "Please install whiptail package to use interactive mode"
-    exit 1;
 fi
 
 function input_file_name() {
@@ -76,7 +75,6 @@ function input_file_name() {
     if [[ -z $FILENAME ]]
     then
         cout error "Exiting: you didn't specified a filename."
-        exit 1
     fi
     apply_naming_convention
 }

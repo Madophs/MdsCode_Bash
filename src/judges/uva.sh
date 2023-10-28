@@ -6,24 +6,23 @@ UVA_LOGIN_URL="${UVA_INDEX_URL}?option=com_comprofiler&task=login"
 UVA_COOKIES_FILE=${BUILD_DIR}/uva_cookies
 UVA_SUBMIT_URL="${UVA_INDEX_URL}?option=com_onlinejudge&Itemid=25&page=save_submission"
 
-function get_uva_hidden_params() {
+function uva_get_hidden_params() {
     curl -f -L -s  ${UVA_BASE_URL} | grep -B8 'id=\"mod_login_remember\"' | awk '{print $3  $4}' | grep -v 'remember' | awk -F '[=\"]' '{print $3"="$6}' | tr '\n' '\&' | sed 's/\&$/\&remember=yes/g'
 }
 
-function already_logged() {
+function uva_already_logged() {
     curl -X GET --cookie ${UVA_COOKIES_FILE} -f -s -L --compressed ${UVA_INDEX_URL} | grep -i register &> /dev/null
     any_error $?
 }
 
 function uva_login() {
-    PARAMS=$(get_uva_hidden_params)
+    PARAMS=$(uva_get_hidden_params)
     USERNAME=$(whiptail --inputbox "Username:" 10 100 3>&1 1>&2 2>&3)
     PASSWORD=$(whiptail --passwordbox "Password:" 10 100 3>&1 1>&2 2>&3)
 
     if [[ -z ${USERNAME} || -z ${PASSWORD} ]]
     then
-        cout danger "[ERROR] Empty fields"
-        exit 1
+        cout error "Empty fields"
     fi
 
     curl --cookie-jar ${UVA_COOKIES_FILE} -f -s -L --compressed -d "${PARAMS}&username=${USERNAME}&passwd=${PASSWORD}" ${UVA_LOGIN_URL} &> /dev/null
@@ -31,7 +30,7 @@ function uva_login() {
 
 function uva_try_login() {
     ATTEMPTS=0
-    while [[ $(already_logged) == "NO" ]]
+    while [[ $(uva_already_logged) == "NO" ]]
     do
         if [[ ${ATTEMPTS} > 0 ]]
         then
@@ -72,8 +71,7 @@ function uva_get_lang_id() {
             echo 6
             ;;
         *)
-            cout danger "Unknown language ${UVA_LANG}"
-            exit 1
+            cout error "Unknown language ${UVA_LANG}"
             ;;
     esac
 }

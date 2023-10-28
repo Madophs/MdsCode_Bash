@@ -10,8 +10,7 @@ function submit_code() {
             uva_submit
             ;;
         *)
-            cout warning "Unknown Online Judge"
-            exit 1
+            cout error "Unknown Online Judge"
             ;;
     esac
 }

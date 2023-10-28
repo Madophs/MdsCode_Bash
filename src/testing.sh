@@ -64,7 +64,7 @@ function set_nth_test_as_input() {
     then
         cat ${TARGET_TEST} > ${MDS_INPUT}
     else
-        cout danger "[ERROR] Test not found."
+        cout error "Test not found."
     fi
 }
 
@@ -106,7 +106,7 @@ function testing() {
                 vimdiff $MDS_OUTPUT ${TEST_SRC_FOLDER}/test_output_${i}.txt
             else
                 echo ""
-                cout green "Ok, don't worry."
+                cout info "Ok, don't worry."
                 echo ""
             fi
             exit 0

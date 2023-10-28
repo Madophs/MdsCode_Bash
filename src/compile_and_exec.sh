@@ -16,7 +16,7 @@ function build_required() {
             if [[ ${FILE_LAST_TIME_WRITTEN} < ${BIN_LAST_TIME_WRITTEN} ]]
             then
                 BUILD_REQUIRED="N"
-                cout warning "[INFO] Skipping build, using previous executable."
+                cout warning "Skipping build, using previous executable."
             fi
         fi
     fi
@@ -28,16 +28,14 @@ function build_file() {
         $CXXCOMPILER $MDS_CXX_FLAGS -I$CXXINCLUDE_DIR $FILENAME -o $BUILD_DIR/run
         if [[ $? != 0 ]]
         then
-            cout error "[ERROR] Errors found during compilation..."
-            exit 1
+            cout error "Errors found during compilation..."
         fi
     elif [[ $BUILD_FILETYPE == "c" ]]
     then
         $CCCOMPILER $MDS_CC_FLAGS $FILENAME -o $BUILD_DIR/run
         if [[ $? != 0 ]]
         then
-            cout error "[ERROR] Errors found during compilation..."
-            exit 1
+            cout error "Errors found during compilation..."
         fi
     elif [[ $BUILD_FILETYPE == "py" ]]
     then
@@ -55,7 +53,7 @@ function build() {
 
         if [[ ${BUILD_REQUIRED} = "Y" ]]
         then
-            cout green "Building ${FILENAME}"
+            cout info "Building ${FILENAME}"
             build_file
 
             echo LANG=\"${BUILD_FILETYPE}\" > ${BUILD_INFO}
@@ -66,7 +64,7 @@ function build() {
         # If we are trying to build a different file from mention aboved, let's built the file found in last.txt
         if [[ -f ${BUILD_INFO} ]]
         then
-            cout warning "[WARNING] Filetype not allowed, skipping building stage."
+            cout warning "Filetype not allowed, skipping building stage."
         fi
     fi
 }
@@ -88,7 +86,7 @@ function io_presetup() {
             IO_ARGS=" ${REDIRECT_OP} ${IO_DIR}/output"
         elif [[ $IO_TYPE != "N" ]]
         then
-            cout error "[ERROR] Unknown IO type: ${IO_TYPE}."
+            cout error "Unknown IO type: ${IO_TYPE}."
         fi
     fi
 }
@@ -96,8 +94,7 @@ function io_presetup() {
 function execute() {
     if [[ ! -f ${BUILD_INFO} ]]
     then
-        cout error "[ERROR] No last build found."
-        exit 1
+        cout error "No last build found."
     fi
 
     source ${BUILD_INFO}
@@ -114,8 +111,7 @@ function execute() {
     then
         eval time python3 $BUILD_DIR/run.py $IO_ARGS
     else
-        cout error "[ERROR] No last build found."
-        exit 1
+        cout error "No last build found."
     fi
 }
 
