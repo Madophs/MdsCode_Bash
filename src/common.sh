@@ -39,7 +39,7 @@ CCCOMPILER="gcc"
 MDS_CC_FLAGS="-Wall -Wextra -g"
 
 function common_setup() {
-    mkdir -p "/tmp/mdscode"
+    mkdir -p ${TEMP_DIR}
     mkdir -p ${BUILD_DIR}
     mkdir -p ${IO_DIR}
     mkdir -p ${TEST_DIR}
@@ -167,7 +167,7 @@ function init_vars() {
 }
 
 function init() {
-    presetup_flags
     common_setup
+    presetup_flags
     init_vars
 }
