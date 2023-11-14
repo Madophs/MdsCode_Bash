@@ -6,7 +6,7 @@ source ${SRC_DIR}/parser.sh
 source ${SRC_DIR}/file_creation.sh
 source ${SRC_DIR}/testing.sh
 source ${SRC_DIR}/compile_and_exec.sh
-source ${SRC_DIR}/interactive_mode.sh
+source ${SRC_DIR}/guimode.sh
 source ${SRC_DIR}/submit.sh
 
 function start_flow() {
@@ -46,7 +46,7 @@ function start_flow() {
 
         if [[ ${OPEN_FLAGS} == Y ]]
         then
-            open_with_editor ${TEMP_FLAGS_FILE}
+            open_flags
         fi
 
         if [[ ${SUBMIT} == Y ]]

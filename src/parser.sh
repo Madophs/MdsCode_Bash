@@ -65,32 +65,21 @@ function parse_args() {
             -t|--test)
                 TESTING="Y"
                 EXECUTION="Y"
-                if [[ -n ${2} && $(is_cmd_option ${2}) == "NO" ]]
-                then
-                    CWSRC_FILE=${2}
-                    shift
-                else
-                    CWSRC_FILE=$(get_last_source_file)
-                fi
+                eval $(set_and_shift_cwsrc_file ${2})
                 shift
                 ;;
             -a|--add)
                 param_validation ${1} ${2}
                 NO_TEST=${2}
                 CREATE_TESTS="Y"
-                if [[ -n ${3} && $(is_cmd_option ${3}) == "NO" ]]
-                then
-                    CWSRC_FILE=${3}
-                    shift
-                else
-                    CWSRC_FILE=$(get_last_source_file)
-                fi
+                eval $(set_and_shift_cwsrc_file ${3})
                 shift
                 shift
                 ;;
             --set-test)
                 param_validation ${1} ${2}
                 SET_TEST=${2}
+                eval $(set_and_shift_cwsrc_file ${3})
                 shift
                 shift
                 ;;

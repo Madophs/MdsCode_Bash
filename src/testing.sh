@@ -1,35 +1,35 @@
 #!/bin/bash
 
 function delete_old_tests() {
-    TEST_FILES=($(ls -l --time-style=full-iso ${TEST_DIR} | tail -n +2 | awk '{print $6" "$NF}' | paste -s -d ' '))
-    CURRENT_DATE=$(date +%s)
-    for (( i=0, j=1; i < ${#TEST_FILES[@]}; i+=2,j+=2 ))
+    local test_files=($(ls -l --time-style=full-iso ${TEST_DIR} | tail -n +2 | awk '{print $6" "$NF}' | paste -s -d ' '))
+    local current_date=$(date +%s)
+    for (( i=0, j=1; i < ${#test_files[@]}; i+=2,j+=2 ))
     do
-        CREATION_DATE=$(date +%s -d "${TEST_FILES[${i}]}")
-        DAYS_DIFF=$(( (${CURRENT_DATE} - ${CREATION_DATE}) / (60 * 60 * 24) ))
-        if [[ ${DAYS_DIFF} -ge 14 ]]
+        local creation_date=$(date +%s -d "${test_files[${i}]}")
+        local days_diff=$(( (${current_date} - ${creation_date}) / (60 * 60 * 24) ))
+        if [[ ${days_diff} -ge 14 ]]
         then
-            rm -rf ${TEST_DIR}/${TEST_FILES[${j}]} &> /dev/null
+            rm -rf ${TEST_DIR}/${test_files[${j}]} &> /dev/null
         fi
     done
 }
 
 function align_tests() {
-    TEST_SRC_FOLDER=${1}
-    LIST_NO_TESTS=($(ls -l ${TEST_SRC_FOLDER} | grep '.txt' | awk '{print $NF}' | grep -o -e '[0-9]*' | sort | uniq | paste -s -d ' '))
+    local test_src_folder=${1}
+    local list_no_test=($(ls -l ${test_src_folder} | grep '.txt' | awk '{print $NF}' | grep -o -e '[0-9]*' | sort | uniq | paste -s -d ' '))
 
-    for (( i=0; i < ${#LIST_NO_TESTS[@]}; i+=1 ))
+    for (( i=0; i < ${#list_no_test[@]}; i+=1 ))
     do
-        cat ${TEST_SRC_FOLDER}/test_input_${LIST_NO_TESTS[${i}]}.txt > ${TEST_SRC_FOLDER}/test_input_${i}.tmp
-        cat ${TEST_SRC_FOLDER}/test_output_${LIST_NO_TESTS[${i}]}.txt > ${TEST_SRC_FOLDER}/test_output_${i}.tmp
+        cat ${test_src_folder}/test_input_${list_no_test[${i}]}.txt > ${test_src_folder}/test_input_${i}.tmp
+        cat ${test_src_folder}/test_output_${list_no_test[${i}]}.txt > ${test_src_folder}/test_output_${i}.tmp
     done
 
-    rm -f ${TEST_SRC_FOLDER}/*.txt
+    rm -f ${test_src_folder}/*.txt
 
-    for (( i=0; i < ${#LIST_NO_TESTS[@]}; i+=1 ))
+    for (( i=0; i < ${#list_no_test[@]}; i+=1 ))
     do
-        mv ${TEST_SRC_FOLDER}/test_input_${i}.tmp ${TEST_SRC_FOLDER}/test_input_${i}.txt
-        mv ${TEST_SRC_FOLDER}/test_output_${i}.tmp ${TEST_SRC_FOLDER}/test_output_${i}.txt
+        mv ${test_src_folder}/test_input_${i}.tmp ${test_src_folder}/test_input_${i}.txt
+        mv ${test_src_folder}/test_output_${i}.tmp ${test_src_folder}/test_output_${i}.txt
     done
 }
 
@@ -37,73 +37,74 @@ function set_test() {
     delete_old_tests
     is_digit ${NO_TEST}
 
-    TEST_SRC_FOLDER_NAME=$(echo ${CWSRC_FILE} | sed 's/\./_/g')
-    TEST_SRC_FOLDER=${TEST_DIR}/${TEST_SRC_FOLDER_NAME}
+    local test_src_folder_name=$(echo ${CWSRC_FILE} | sed 's/\./_/g')
+    local test_src_folder=${TEST_DIR}/${test_src_folder_name}
 
-    mkdir -p ${TEST_SRC_FOLDER}
+    mkdir -p ${test_src_folder}
 
-    START_TEST_NUM=0
-    CURR_EXISTING_TEST_NUM=$(( $(ls -l ${TEST_SRC_FOLDER} | grep '.txt' | wc -l) / 2 ))
-    if [[ ${CURR_EXISTING_TEST_NUM} > 0 ]]
+    local start_test_num=0
+    local curr_existing_test_num=$(( $(ls -l ${test_src_folder} | grep '.txt' | wc -l) / 2 ))
+    if [[ ${curr_existing_test_num} > 0 ]]
     then
-        START_TEST_NUM=$(ls -l ${TEST_SRC_FOLDER} | tail -n +2 | awk '{print $NF}' | grep -o -e '[0-9]*' | sort | uniq | tail -n 1)
-        START_TEST_NUM=$(( ${START_TEST_NUM} + 1 ))
+        start_test_num=$(ls -l ${test_src_folder} | tail -n +2 | awk '{print $NF}' | grep -o -e '[0-9]*' | sort | uniq | tail -n 1)
+        start_test_num=$(( ${start_test_num} + 1 ))
     fi
 
-    END_TEST_NUM=$(( ${START_TEST_NUM} + ${NO_TEST} ))
-    for (( i=${START_TEST_NUM}; i < ${END_TEST_NUM}; i+=1 ))
+    local end_test_num=$(( ${start_test_num} + ${NO_TEST} ))
+    for (( i=${start_test_num}; i < ${end_test_num}; i+=1 ))
     do
-        vim -O2 ${TEST_SRC_FOLDER}/test_input_${i}.txt ${TEST_SRC_FOLDER}/test_output_${i}.txt
+        vim -O2 ${test_src_folder}/test_input_${i}.txt ${test_src_folder}/test_output_${i}.txt
     done
 }
 
 function set_nth_test_as_input() {
-    TARGET_TEST=${TEST_DIR}/test_input_${SET_TEST}.txt
-    echo ${TARGET_TEST}
-    if [[ -f ${TARGET_TEST} ]]
+    local test_src_folder_name=$(echo ${CWSRC_FILE} | sed 's/\./_/g')
+    local test_src_folder=${TEST_DIR}/${test_src_folder_name}
+    local target_test=${test_src_folder}/test_input_${SET_TEST}.txt
+    if [[ -f ${target_test} ]]
     then
-        cat ${TARGET_TEST} > ${MDS_INPUT}
+        cat ${target_test} > ${MDS_INPUT}
     else
         cout error "Test not found."
     fi
 }
 
 function testing() {
-    TEST_SRC_FOLDER_NAME=$(echo ${CWSRC_FILE} | sed 's/\./_/g')
-    TEST_SRC_FOLDER=${TEST_DIR}/${TEST_SRC_FOLDER_NAME}
-    NO_TEST=$(( $(ls -l ${TEST_DIR}/test*txt | wc -l) / 2 ))
+    local test_src_folder_name=$(echo ${CWSRC_FILE} | sed 's/\./_/g')
+    local test_src_folder=${TEST_DIR}/${test_src_folder_name}
+    local no_test=$(( $(ls -l ${test_src_folder}/test*txt | wc -l) / 2 ))
 
-    for (( i=0; i < ${NO_TEST}; i+=1 ))
+    for (( i=0; i < ${no_test}; i+=1 ))
     do
-        cout warning "Test Case #${i}"
-        execute ${TEST_SRC_FOLDER}/test_input_${i}.txt
-        diff ${IO_DIR}/output ${TEST_SRC_FOLDER}/test_output_${i}.txt > /dev/null
+        cout info "Test Case #${i}"
+        execute ${test_src_folder}/test_input_${i}.txt
+        diff ${MDS_OUTPUT} ${test_src_folder}/test_output_${i}.txt > /dev/null
         if [[ $? != 0 ]]
         then
             printf "Test #${i}\n"
-            MAX_LINES=300;
-            LINES_CONT=1
+            local max_lines=300;
+            local lines_cont=1
 
             # Preserve the colorful output from diff command
-            diff $MDS_OUTPUT ${TEST_SRC_FOLDER}/test_output_${i}.txt | xargs -L 1 -I {} echo {} | \
-            while read LINE; do \
-                GREP_COLORS='ms=1;31'; echo ${LINE} | grep --color=always -e '<.*'; \
-                GREP_COLORS='ms=1;34'; echo ${LINE} | grep --color=always - ; \
-                GREP_COLORS='ms=1;37'; echo ${LINE} | grep --color=always -e '^[0-9].*' ; \
-                GREP_COLORS='ms=1;32'; echo ${LINE} | grep --color=always -e '>.*'; \
-                LINES_CONT=$(( LINES_CONT + 1 )); \
-                if [[ ${LINES_CONT} -ge ${MAX_LINES} ]]; \
+            diff ${MDS_OUTPUT} ${test_src_folder}/test_output_${i}.txt | xargs -L 1 -I {} echo {} | \
+            while read line; do \
+                GREP_COLORS='ms=1;31'; echo ${line} | grep --color=always -e '<.*'; \
+                GREP_COLORS='ms=1;34'; echo ${line} | grep --color=always - ; \
+                GREP_COLORS='ms=1;37'; echo ${line} | grep --color=always -e '^[0-9].*' ; \
+                GREP_COLORS='ms=1;32'; echo ${line} | grep --color=always -e '>.*'; \
+                lines_cont=$(( lines_cont + 1 )); \
+                if [[ ${lines_cont} -ge ${max_lines} ]]; \
                 then \
                     break;\
                 fi; \
             done;
 
-            cout danger "Wrong Answer :("
+            cout warning "Wrong Answer :("
             printf "\nDo you want to check the mismatches? (y/n) "
-            read -n 1 OPT
+            read -n 1 opt
 
-            if [[ $OPT == "y" || $OPT == "Y" ]]; then
-                vimdiff $MDS_OUTPUT ${TEST_SRC_FOLDER}/test_output_${i}.txt
+            if [[ ${opt} == "y" || ${opt} == "Y" ]]; then
+                vimdiff ${MDS_OUTPUT} ${test_src_folder}/test_output_${i}.txt
             else
                 echo ""
                 cout info "Ok, don't worry."

@@ -10,10 +10,10 @@ WHITESPACE_REPLACE=_
 DEFAULT_FILETYPE=cpp
 # C++ configs
 CXXCOMPILER=g++
-CXX_STANDARD=c++17
-CXX_FLAGS=-O0 -Wall -Wextra -g -D__MDS_DEBUG__
-CXX_AVAILABLE_FLAGS=-O3 -Wall -pipe -pthread -Wextra -g -fsanitize=address \
-    -fsanitize=undefined -fsanitize=float-cast-overflow \
+CXX_STANDARD=-std=c++17
+CXX_FLAGS=-O0 -Wall -Wextra -g -fsanitize=address -D__MDS_DEBUG__
+CXX_AVAILABLE_FLAGS=-O0 -O2 -O3 -Wall -pipe -pthread -Wextra -g \
+    -fsanitize=undefined -fsanitize=float-cast-overflow -fsanitize=address\
     -fsanitize=leak -D__MDS_DEBUG__
 CCCOMPILER=gcc
 CC_FLAGS=-Wall -Wextra -g

@@ -7,11 +7,11 @@ function is_build_required() {
     then
         source ${BUILD_INFO} # Last TMP_SOURCE_FILE built
         TMP_SOURCE_FILE=$(echo ${TMP_SOURCE_FILE} | awk -F '/' '{print $NF}')
-        local current_file=$(echo ${FILENAME} | awk -F '/' '{print $NF}')
+        local current_file=$(echo "${FILEPATH}${FILENAME}" | awk -F '/' '{print $NF}')
         if [[ "${current_file}" == "${TMP_SOURCE_FILE}" ]]
         then
             local executable=${BUILD_DIR}/run
-            local file_last_time_written=$(ls -l --time-style full-iso ${FILENAME} | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
+            local file_last_time_written=$(ls -l --time-style full-iso "${FILEPATH}${FILENAME}" | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
             local bin_last_time_written=$(ls -l --time-style full-iso ${executable} | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
             if [[ ${file_last_time_written} < ${bin_last_time_written} ]]
             then
@@ -37,7 +37,7 @@ function build_file() {
     cout info "Compiling ${FILENAME}"
     case ${FILETYPE} in
         cpp)
-            ${CONFIGS_MAP['CXXCOMPILER']} -std=${CONFIGS_MAP['CXX_STANDARD']} \
+            ${CONFIGS_MAP['CXXCOMPILER']} ${CONFIGS_MAP['CXX_STANDARD']} \
                 ${CONFIGS_MAP['CXX_FLAGS']} -I${CXXINCLUDE_DIR} ${FILEPATH}${FILENAME} -o ${BUILD_DIR}/run
             show_status_compilation_message $?
             ;;
@@ -63,13 +63,27 @@ function is_allowed_build_filetype() {
 }
 
 function save_last_build_info() {
+    CWSRC_FILE=${FILENAME}
+
+    # Last source file built
     echo LANG=\"${FILETYPE}\" > ${BUILD_INFO}
     cp -p ${FILEPATH}${FILENAME} ${TEMP_DIR}/${FILENAME}
     echo TMP_SOURCE_FILE=\"${TEMP_DIR}/${FILENAME}\" >> ${BUILD_INFO}
     echo ORIGINAL_SOURCE="$(realpath ${FILEPATH}${FILENAME})" >> ${BUILD_INFO}
+
+    save_flags
+}
+
+function update_flags() {
+    local last_file_built=$(get_last_source_file)
+    if [[ ${last_file_built} != ${FILENAME} ]]
+    then
+        read_custom_configs ${FILENAME}
+    fi
 }
 
 function build() {
+    update_flags
     FILETYPE=$(get_file_extension "${FILENAME}")
     if [[ $(is_allowed_build_filetype ${FILETYPE}) == YES ]]
     then
@@ -86,15 +100,22 @@ function build() {
 }
 
 function io_presetup() {
+    if [[ -n ${1} ]]
+    then
+        local input_file="${1}"
+        IO_ARGS=" < ${input_file} > ${MDS_OUTPUT}"
+        return 0
+    fi
+
     case ${IO_TYPE} in
         IO)
-            IO_ARGS=" < ${IO_DIR}/input > ${IO_DIR}/output ${REDIRECT_OP}"
+            IO_ARGS=" < ${MDS_INPUT} > ${MDS_OUTPUT} ${REDIRECT_OP}"
             ;;
         I)
-            IO_ARGS=" < ${IO_DIR}/input"
+            IO_ARGS=" < ${MDS_INPUT}"
             ;;
         O)
-            IO_ARGS=" > ${IO_DIR}/output ${REDIRECT_OP}"
+            IO_ARGS=" > ${MDS_OUTPUT} ${REDIRECT_OP}"
             ;;
         N)
             IO_ARGS=""
@@ -111,7 +132,7 @@ function execute() {
         cout error "File hasn't been compiled."
     fi
 
-    io_presetup
+    io_presetup ${1}
     source ${BUILD_INFO}
 
     case ${LANG} in

@@ -31,6 +31,16 @@ function apply_naming_convention() {
     filename="${filename}.${file_extension}"
 }
 
+function set_default_template() {
+    local filetype=${1}
+    if [[ -f ${TEMPLATES_DIR}/default.${filetype} ]]
+    then
+        TEMPLATE=default.${filetype}
+    else
+        TEMPLATE=none
+    fi
+}
+
 function load_template() {
     local file=${1}
     local file_type=${2}
@@ -47,8 +57,9 @@ function load_template() {
         if [[ -f ${TEMPLATES_DIR}/${TEMPLATE} ]]
         then
             cat ${TEMPLATES_DIR}/${TEMPLATE} > ${file}
-        else
-            cout warning "Default ${file_type} template not found, creating an empty file."
+        elif [[ ${TEMPLATE} != none ]]
+        then
+            cout warning "Template ${TEMPLATE} not found, creating an empty file."
         fi
     fi
 }

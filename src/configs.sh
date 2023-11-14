@@ -36,13 +36,25 @@ function read_default_configs() {
     done
 } < ${CONFIGS_FILE}
 
+function read_saved_flags() {
+    local file_to_build
+    if [[ -z ${1} ]]
+    then
+        file_to_build=$(get_last_source_file)
+    else
+        file_to_build=${1}
+    fi
+    source ${FLAGS_DIR}/${file_to_build}.sh > /dev/null 2>&1
+}
+
 function read_custom_configs() {
     declare -a configs_map_keys=(${!CONFIGS_MAP[*]})
+    read_saved_flags ${1}
     local result
     local value
     for (( i=0; i < ${#configs_map_keys[*]}; i+=1 ))
     do
-        result=$(env | grep ${configs_map_keys[${i}]})
+        result=$(env | grep -e "^${configs_map_keys[${i}]}")
         if [[ -n ${result} ]]
         then
             value=$(echo ${result} | grep -o -e '=.*' | sed s/^=//g)
