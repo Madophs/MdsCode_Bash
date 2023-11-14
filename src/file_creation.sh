@@ -1,85 +1,104 @@
 #!/bin/bash
 
 function apply_naming_convention() {
+    missing_argument_validation 2 ${1} ${2}
+    declare -n filename=${1}
+    local file_extension=${2}
+
+    filename=$(echo ${filename} | sed "s/\.${file_extension}//g")
+
     # Remove weird characters
-    FILENAME=$(sed 's/[^a-zA-Z 0-9\-]//g' <(echo $FILENAME))
+    filename=$(sed 's/[^a-zA-Z 0-9\-_]//g' <(echo ${filename}))
 
     # Replacing non-english characters
-    FILENAME=$(sed 's/á/a/g;s/é/e/g;s/í/i/g;s/ó/o/g;s/ú/u/g;s/ü/u/g;s/ñ/n/g' <(echo $FILENAME))
-    FILENAME=$(sed 's/Á/A/g;s/É/E/g;s/Í/I/g;s/Ó/O/g;s/Ú/U/g;s/Ü/U/g;s/Ñ/N/g' <(echo $FILENAME))
+    filename=$(sed 's/á/a/g;s/é/e/g;s/í/i/g;s/ó/o/g;s/ú/u/g;s/ü/u/g;s/ñ/n/g' <(echo $filename))
+    filename=$(sed 's/Á/A/g;s/É/E/g;s/Í/I/g;s/Ó/O/g;s/Ú/U/g;s/Ü/U/g;s/Ñ/N/g' <(echo $filename))
 
-    if [[ $CASETYPE == "UCWORDS" ]]
+    if [[ ${CONFIGS_MAP['CASETYPE']} == UCWORDS ]]
     then
-        FILENAME=$(echo $FILENAME | sed -e 's/\b\(.\)/\u\1/g')
-    elif [[ $CASETYPE == "UPPERCASE" ]]
+        filename=$(echo ${filename} | sed -e 's/\b\(.\)/\u\1/g')
+    elif [[ ${CONFIGS_MAP['CASETYPE']} == UPPERCASE ]]
     then
-        FILENAME=$(echo $FILENAME | tr '[:lower:]' '[:upper:]')
-    elif [[ $CASETYPE == "LOWERCASE" ]]
+        filename=$(echo ${filename} | tr '[:lower:]' '[:upper:]')
+    elif [[ ${CONFIGS_MAP['CASETYPE']} == LOWERCASE ]]
     then
-        FILENAME=$(echo $FILENAME | tr '[:upper:]' '[:lower:]')
+        filename=$(echo ${filename} | tr '[:upper:]' '[:lower:]')
     else
-        cout error "Unknown casetype [${CASETYPE}]"
+        cout error "Unknown casetype [${CONFIGS_MAP['CASETYPE']}]"
     fi
 
-    FILENAME=$(sed "s/ /${WHITESPACE_REPLACE}/g;s/-/${WHITESPACE_REPLACE}/g" <(echo $FILENAME))
+    filename=$(sed "s/ /${CONFIGS_MAP['WHITESPACE_REPLACE']}/g;s/-/${CONFIGS_MAP['WHITESPACE_REPLACE']}/g" <(echo ${filename}))
+    filename="${filename}.${file_extension}"
+}
+
+function load_template() {
+    local file=${1}
+    local file_type=${2}
+    if [[ -z ${TEMPLATE} ]]
+    then
+        if [[ -f "${TEMPLATES_DIR}/default.${file_type}" ]]
+        then
+            cat ${TEMPLATES_DIR}/default.${file_type} > ${file}
+        else
+            cout warning "Default ${file_type} template not found."
+            cout info "Creating a simple empty file."
+        fi
+    else
+        if [[ -f ${TEMPLATES_DIR}/${TEMPLATE} ]]
+        then
+            cat ${TEMPLATES_DIR}/${TEMPLATE} > ${file}
+        else
+            cout warning "Default ${file_type} template not found, creating an empty file."
+        fi
+    fi
 }
 
 function create_file() {
-    if [[ -n $FILE_TYPE ]]
+    if [[ -z ${FILETYPE} ]]
     then
-        # Create the file in a tmp location
-        TEMP_FILE="main_"$(date +'%s').$FILE_TYPE
-        touch ${TEMP_DIR}/${TEMP_FILE}
-
-        if [[ -z $TEMPLATE ]]
+        FILETYPE=$(get_file_extension "${FILENAME}")
+        if [[ -z ${FILETYPE} ]]
         then
-            if [[ -f ${TEMPLATES_DIR}/default.${FILE_TYPE} ]]
+            cout warning "Filetype not specified using default: ${CONFIGS_MAP['DEFAULT_FILETYPE']}"
+            FILETYPE=${CONFIGS_MAP['DEFAULT_FILETYPE']}
+        fi
+    fi
+
+    # Create the file in a tmp location
+    local tmp_filename="main_$(date +'%s').${FILETYPE}"
+    local tmp_file="${TEMP_DIR}/${tmp_filename}"
+    touch ${tmp_file}
+
+    if [[ -n ${FILENAME} ]]
+    then
+        apply_naming_convention FILENAME ${FILETYPE}
+        load_template ${tmp_file} ${FILETYPE}
+
+        local file_fullpath="${FILEPATH}${FILENAME}"
+        if [[ -f ${file_fullpath} ]]
+        then
+            cout warning "File ${FILENAME} already exists."
+            cout info "Replace? (Y/N)"
+            local input
+            read input
+            if [[ ${input} == y  || ${input} == Y ]]
             then
-                cat ${TEMPLATES_DIR}/default.${FILE_TYPE} > ${TEMP_DIR}/${TEMP_FILE}
+                cout warning "Replacing file."
+                cat ${tmp_file} > ${file_fullpath}
+                cout success "File \"${FILENAME}\" replaced successfully."
+                open_with_editor "${file_fullpath}"
             else
-                cout warning "Default ${FILE_TYPE} template not found."
-                cout info "Creating a simple empty file."
+                cout info "Wise choice, bye..."
             fi
         else
-            if [[ -f ${TEMPLATES_DIR}/${TEMPLATE} ]]
-            then
-                cat ${TEMPLATES_DIR}/${TEMPLATE} > ${TEMP_DIR}/${TEMP_FILE}
-            else
-                cout warning "Default ${FILE_TYPE} template not found, creating an empty file"
-            fi
+            cat ${tmp_file} > ${file_fullpath}
+            cout success "File \"${FILENAME}\" created successfully."
+            open_with_editor "${file_fullpath}"
         fi
-
-        if [[ -n $FILENAME ]]
-        then
-            apply_naming_convention
-
-            # Check if file already exists
-            ls -f ${FILENAME}.${FILE_TYPE} &> /dev/null
-            if [[ $? == 0 ]]
-            then
-                cout warning "File ${FILENAME}.${FILE_TYPE} already exists."
-                cout info "Replace? (Y/N)"
-                read DECISION
-                if [[ $DECISION == "y"  || $DECISION == "Y" ]]
-                then
-                    cout warning "Replacing file."
-                    FULL_FILENAME=${FILENAME}.${FILE_TYPE}
-                    cat ${TEMP_DIR}/${TEMP_FILE} > ${FULL_FILENAME}
-                    cout success "File \"${FULL_FILENAME}\" replaced successfully."
-                    open_with_vim "${FULL_FILENAME}"
-                else
-                    cout info "Wise choice, bye..."
-                    exit 0
-                fi
-            else
-                FULL_FILENAME=${FILENAME}.${FILE_TYPE}
-                cat ${TEMP_DIR}/${TEMP_FILE} > ${FULL_FILENAME}
-                cout success "File \"${FILENAME}.${FILE_TYPE}\" created successfully."
-                open_with_vim "${FULL_FILENAME}"
-            fi
-        else
-            cout warning "Filename not specified, file generated with a random name \"$TEMP_FILE\""
-            cp ${TEMP_DIR}/${TEMP_FILE} .
-        fi
+    else
+        load_template ${tmp_file} ${FILETYPE}
+        cout warning "Filename not specified, file generated with a random name \"${tmp_filename}\""
+        cp ${tmp_file} .
+        open_with_editor "${tmp_filename}"
     fi
 }

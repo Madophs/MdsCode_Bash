@@ -1,0 +1,20 @@
+# If you want to customize the configs, export the desire config variable to overwrite it
+# Example: export MDS_EDITOR=vim
+MDS_EDITOR=vim
+EDITOR_COMMAND=vim --servername /tmp/mdssocket --remote-silent {{FILE}}
+OPEN_WITH_EDITOR=YES
+VIM_SERVERNAME=/tmp/mdssocket
+# values: UCWORDS, UPPERCASE, LOWERCASE
+CASETYPE=UCWORDS
+WHITESPACE_REPLACE=_
+DEFAULT_FILETYPE=cpp
+# C++ configs
+CXXCOMPILER=g++
+CXX_STANDARD=c++17
+CXX_FLAGS=-O0 -Wall -Wextra -g -D__MDS_DEBUG__
+CXX_AVAILABLE_FLAGS=-O3 -Wall -pipe -pthread -Wextra -g -fsanitize=address \
+    -fsanitize=undefined -fsanitize=float-cast-overflow \
+    -fsanitize=leak -D__MDS_DEBUG__
+CCCOMPILER=gcc
+CC_FLAGS=-Wall -Wextra -g
+PYTHON_BIN=python3

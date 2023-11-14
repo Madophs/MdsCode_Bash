@@ -1,9 +1,21 @@
 #!/bin/bash
 
-FILE_TYPE="cpp"
+FILENAME=""
+FILETYPE=""
+FILEPATH=""
 TEMPLATE=""
 CREATION="N"
 BUILDING="N"
+AWAYS_BUILD="N"
 EXECUTION="N"
-REDIRECT_OP="&>"
+IO_ARGS=""
+REDIRECT_OP=""
 IO_TYPE="IO" # I -> with input, O -> with output, N -> no IO redirection
+DEBUG="N"
+GUI="N"
+OPEN_FLAGS="N"
+SUBMIT="N"
+NO_TEST=0
+SET_TEST="-1"
+CREATE_TESTS="N"
+TESTING="N"

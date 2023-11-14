@@ -1,118 +1,131 @@
 #!/bin/bash
 
-BUILD_REQUIRED="Y"
+ALLOWED_BUILD_FILETYPES=("cpp" "py" "c" "java")
 
-function build_required() {
-    if [[ -f ${BUILD_INFO} ]]
+function is_build_required() {
+    if [[ ${ALWAYS_BUILD} != Y && -f ${BUILD_INFO} ]]
     then
-        source ${BUILD_INFO} # Last SOURCE_FILE built
-        SOURCE_FILE=$(echo ${SOURCE_FILE} | awk -F '/' '{print $NF}')
-        CURRENT_FILE=$(echo ${FILENAME} | awk -F '/' '{print $NF}')
-        if [[ "${CURRENT_FILE}" == "${SOURCE_FILE}" ]]
+        source ${BUILD_INFO} # Last TMP_SOURCE_FILE built
+        TMP_SOURCE_FILE=$(echo ${TMP_SOURCE_FILE} | awk -F '/' '{print $NF}')
+        local current_file=$(echo ${FILENAME} | awk -F '/' '{print $NF}')
+        if [[ "${current_file}" == "${TMP_SOURCE_FILE}" ]]
         then
-            BINARY=${BUILD_DIR}/run
-            FILE_LAST_TIME_WRITTEN=$(ls -l --time-style full-iso ${FILENAME} | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
-            BIN_LAST_TIME_WRITTEN=$(ls -l --time-style full-iso ${BINARY} | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
-            if [[ ${FILE_LAST_TIME_WRITTEN} < ${BIN_LAST_TIME_WRITTEN} ]]
+            local executable=${BUILD_DIR}/run
+            local file_last_time_written=$(ls -l --time-style full-iso ${FILENAME} | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
+            local bin_last_time_written=$(ls -l --time-style full-iso ${executable} | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
+            if [[ ${file_last_time_written} < ${bin_last_time_written} ]]
             then
-                BUILD_REQUIRED="N"
-                cout warning "Skipping build, using previous executable."
+                echo "NO"
             fi
         fi
+    fi
+    echo "YES"
+}
+
+function show_status_compilation_message()
+{
+    local exit_status=$1
+    if [[ $(exit_is_zero ${exit_status}) == NO ]]
+    then
+        cout error "Errors found during compilation..."
+    else
+        cout success "Compilation finished successfully."
     fi
 }
 
 function build_file() {
-    if [[ $BUILD_FILETYPE == "cpp" ]]
+    cout info "Compiling ${FILENAME}"
+    case ${FILETYPE} in
+        cpp)
+            ${CONFIGS_MAP['CXXCOMPILER']} -std=${CONFIGS_MAP['CXX_STANDARD']} \
+                ${CONFIGS_MAP['CXX_FLAGS']} -I${CXXINCLUDE_DIR} ${FILEPATH}${FILENAME} -o ${BUILD_DIR}/run
+            show_status_compilation_message $?
+            ;;
+        c)
+            ${CONFIGS_MAP['CCCOMPILER']} ${CC_FLAGS} ${FILEPATH}${FILENAME} -o ${BUILD_DIR}/run
+            show_status_compilation_message $?
+            ;;
+        py)
+            # python is an intepreted language, therefore we only copy the file to build directory
+            cp -f ${FILEPATH}${FILENAME} ${BUILD_DIR}/run
+            ;;
+    esac
+}
+
+function is_allowed_build_filetype() {
+    echo ${ALLOWED_BUILD_FILETYPES[*]} | grep -o -w -e "${1}" > /dev/null 2>&1
+    if [[ $(exit_is_zero $?) == YES ]]
     then
-        $CXXCOMPILER $MDS_CXX_FLAGS -I$CXXINCLUDE_DIR $FILENAME -o $BUILD_DIR/run
-        if [[ $? != 0 ]]
-        then
-            cout error "Errors found during compilation..."
-        fi
-    elif [[ $BUILD_FILETYPE == "c" ]]
-    then
-        $CCCOMPILER $MDS_CC_FLAGS $FILENAME -o $BUILD_DIR/run
-        if [[ $? != 0 ]]
-        then
-            cout error "Errors found during compilation..."
-        fi
-    elif [[ $BUILD_FILETYPE == "py" ]]
-    then
-        cp -f $FILENAME $BUILD_DIR/run
+        echo "YES"
+    else
+        echo "NO"
     fi
 }
 
+function save_last_build_info() {
+    echo LANG=\"${FILETYPE}\" > ${BUILD_INFO}
+    cp -p ${FILEPATH}${FILENAME} ${TEMP_DIR}/${FILENAME}
+    echo TMP_SOURCE_FILE=\"${TEMP_DIR}/${FILENAME}\" >> ${BUILD_INFO}
+    echo ORIGINAL_SOURCE="$(realpath ${FILEPATH}${FILENAME})" >> ${BUILD_INFO}
+}
+
 function build() {
-    BUILD_FILETYPE=$(echo $FILENAME | awk -F '.' '{print $NF}')
-
-    IS_ALLOWED_BUILD_FILETYPE=$(echo ${ALLOWED_BUILD_FILETYPES} | grep -o ${BUILD_FILETYPE})
-    if [[ -n ${IS_ALLOWED_BUILD_FILETYPE} ]]
+    FILETYPE=$(get_file_extension "${FILENAME}")
+    if [[ $(is_allowed_build_filetype ${FILETYPE}) == YES ]]
     then
-        build_required
-
-        if [[ ${BUILD_REQUIRED} = "Y" ]]
+        if [[ $(is_build_required) = YES ]]
         then
-            cout info "Building ${FILENAME}"
             build_file
-
-            echo LANG=\"${BUILD_FILETYPE}\" > ${BUILD_INFO}
-            cp -p ${FILENAME} ${TEMP_DIR}/${FILENAME}
-            echo SOURCE_FILE=\"${TEMP_DIR}/${FILENAME}\" >> ${BUILD_INFO}
+            save_last_build_info
+        else
+            cout warning "Skipping build, using previous executable."
         fi
     else
-        # If we are trying to build a different file from mention aboved, let's built the file found in last.txt
-        if [[ -f ${BUILD_INFO} ]]
-        then
-            cout warning "Filetype not allowed, skipping building stage."
-        fi
+        cout error "Failed to build. Filetype not allowed."
     fi
 }
 
 function io_presetup() {
-    if [[ ! -z ${1} ]]
-    then
-        echo "" > ${IO_DIR}/output
-        IO_ARGS=" < ${1} > ${IO_DIR}/output"
-    else
-        if [[ $IO_TYPE == "IO" ]]
-        then
-            IO_ARGS=" < ${IO_DIR}/input ${REDIRECT_OP} ${IO_DIR}/output"
-        elif [[ $IO_TYPE == "I" ]]
-        then
+    case ${IO_TYPE} in
+        IO)
+            IO_ARGS=" < ${IO_DIR}/input > ${IO_DIR}/output ${REDIRECT_OP}"
+            ;;
+        I)
             IO_ARGS=" < ${IO_DIR}/input"
-        elif [[ $IO_TYPE == "O" ]]
-        then
-            IO_ARGS=" ${REDIRECT_OP} ${IO_DIR}/output"
-        elif [[ $IO_TYPE != "N" ]]
-        then
+            ;;
+        O)
+            IO_ARGS=" > ${IO_DIR}/output ${REDIRECT_OP}"
+            ;;
+        N)
+            IO_ARGS=""
+            ;;
+        *)
             cout error "Unknown IO type: ${IO_TYPE}."
-        fi
-    fi
+            ;;
+    esac
 }
 
 function execute() {
     if [[ ! -f ${BUILD_INFO} ]]
     then
-        cout error "No last build found."
+        cout error "File hasn't been compiled."
     fi
 
+    io_presetup
     source ${BUILD_INFO}
 
-    io_presetup ${1}
-
-    if [[ $LANG == "cpp" ]]
-    then
-        eval time $BUILD_DIR/run $IO_ARGS
-    elif [[ $LANG == "c" ]]
-    then
-        eval time $BUILD_DIR/run $IO_ARGS
-    elif [[ $LANG == "py" ]]
-    then
-        eval time python3 $BUILD_DIR/run.py $IO_ARGS
-    else
-        cout error "No last build found."
-    fi
+    case ${LANG} in
+        cpp)
+            eval time ${BUILD_DIR}/run ${IO_ARGS}
+            ;;
+        c)
+            eval time ${BUILD_DIR}/run ${IO_ARGS}
+            ;;
+        py)
+            eval time ${CONFIGS_MAP['PYTHON_BIN']} ${BUILD_DIR}/run ${IO_ARGS}
+            ;;
+        *)
+            cout error "No last build info found."
+            ;;
+    esac
 }
-
-

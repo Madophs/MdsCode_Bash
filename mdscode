@@ -2,13 +2,5 @@
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 SRC_DIR=${SCRIPT_DIR}/src
-
-# Common variables and utility functions
-source ${SRC_DIR}/common.sh
-init
-
-# Parse the args
-source ${SRC_DIR}/parser.sh
-
-# Execute commands/functions based on the activated args
-source ${SRC_DIR}/execution_flow.sh
+source ${SRC_DIR}/main_flow.sh
+start $@
