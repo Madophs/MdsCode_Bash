@@ -13,7 +13,6 @@ function parse_args() {
         case $1 in
             -h|--help)
                 display_help
-                exit 0
                 ;;
             -f|--file-type)
                 param_validation ${1} ${2}
@@ -33,6 +32,10 @@ function parse_args() {
                     shift
                 done
                 separate_filepath_and_filename FILENAME FILEPATH
+                ;;
+            --ignore-rename)
+                IGNORE_RENAMING="Y"
+                shift
                 ;;
             -c|--create)
                 CREATION="Y"

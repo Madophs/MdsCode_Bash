@@ -1,19 +1,5 @@
 #!/bin/bash
 
-function delete_old_tests() {
-    local test_files=($(ls -l --time-style=full-iso ${TEST_DIR} | tail -n +2 | awk '{print $6" "$NF}' | paste -s -d ' '))
-    local current_date=$(date +%s)
-    for (( i=0, j=1; i < ${#test_files[@]}; i+=2,j+=2 ))
-    do
-        local creation_date=$(date +%s -d "${test_files[${i}]}")
-        local days_diff=$(( (${current_date} - ${creation_date}) / (60 * 60 * 24) ))
-        if [[ ${days_diff} -ge 14 ]]
-        then
-            rm -rf ${TEST_DIR}/${test_files[${j}]} &> /dev/null
-        fi
-    done
-}
-
 function align_tests() {
     local test_src_folder=${1}
     local list_no_test=($(ls -l ${test_src_folder} | grep '.txt' | awk '{print $NF}' | grep -o -e '[0-9]*' | sort | uniq | paste -s -d ' '))
@@ -34,7 +20,6 @@ function align_tests() {
 }
 
 function set_test() {
-    delete_old_tests
     is_digit ${NO_TEST}
 
     local test_src_folder_name=$(echo ${CWSRC_FILE} | sed 's/\./_/g')

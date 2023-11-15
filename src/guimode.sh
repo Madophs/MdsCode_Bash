@@ -5,30 +5,9 @@ source ${SRC_DIR}/gui/guicpp.sh
 
 AVAILABLE_LANGUAGES=("C++" "" "C Language" "" "Java" "" "Python" "" "Rust" "")
 
-function is_vim_the_father() {
-    CHILD=$(ps $$ | tail -n 1 | awk '{print $1}')
-    PARENT=
-    while true
-    do
-        PARENT=$(ps -o ppid -p ${CHILD} | tail -n 1 | awk '{print $1}')
-        COMMAND=$(ps -o command -p ${PARENT} | tail -n 1 | awk -F / '{print $NF}' | awk '{print $1}')
-        if [[ ${PARENT} == 1 ]]
-        then
-            echo "NO"
-            break
-        elif [[ ${COMMAND} == "vim" || ${COMMAND} == "nvim" ]]
-        then
-            echo "YES"
-            break
-        fi
-        CHILD=${PARENT}
-    done
-}
-
 # https://askubuntu.com/questions/776831/whiptail-change-background-color-dynamically-from-magenta
 function set_newt_colors() {
-    USING_VIM=$(is_vim_the_father)
-    if [[ ${USING_VIM} == "YES" ]]
+    if [[ $(is_vim_the_father) == YES ]]
     then
         export NEWT_COLORS='
             root=black,black
@@ -97,6 +76,7 @@ function exit_if_whiptail_not_installed() {
 }
 
 function start_gui() {
+    clear
     exit_if_whiptail_not_installed
     set_newt_colors
     start_wizard

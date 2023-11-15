@@ -127,6 +127,21 @@ function open_with_editor() {
     fi
 }
 
+function delete_old_files() {
+    local target_dir="${1}"
+    local files=($(ls -l --time-style=full-iso "${target_dir}" | tail -n +2 | awk '{print $6" "$NF}' | paste -s -d ' '))
+    local current_date=$(date +%s)
+    for (( i=0, j=1; i < ${#files[@]}; i+=2,j+=2 ))
+    do
+        local creation_date=$(date +%s -d "${files[${i}]}")
+        local days_diff=$(( (${current_date} - ${creation_date}) / (60 * 60 * 24) ))
+        if [[ ${days_diff} -ge 14 ]]
+        then
+            rm -rf ${target_dir}/${files[${j}]} &> /dev/null
+        fi
+    done
+}
+
 function open_flags() {
     local last_built_file=$(get_last_source_file)
     local path_to_file="${FLAGS_DIR}/${last_built_file}.sh"
@@ -198,6 +213,16 @@ function exit_is_zero() {
     fi
 }
 
+function exit_is_not_zero() {
+    local cmd_output=$1
+    if [[ ${cmd_output} == 1 ]]
+    then
+        echo "YES"
+    else
+        echo "NO"
+    fi
+}
+
 function is_digit() {
     local arg=${1}
 	grep -o -e '^[0-9]*$' <(echo ${arg}) &> /dev/null
@@ -218,27 +243,29 @@ function set_var() {
     fi
 }
 
-function display_help() {
-    printf "Usage: mdscode [options] file...\n"
-    printf "Options:\n"
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -f "--file [type]" "Specify the file type (c,cpp,py,java). Default: cpp"
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -n "--name [args...]" "Filename"
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -c "--create" "Create file"
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -b "--build" "Build the given source file (c,cpp,py,java)"
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--force-build" "Always try to build the given source file (c,cpp,py,java)"
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -e "--exec" "Executes last compiled file."
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--exer" "Executes last compiled file without redirecting errors to output file."
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -i "--io" "Choose the prevefered IO type (I,O,IO). Default: IO"
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -t "--test" "Test last compiled bin"
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -a "--add [no tests] [src file]" "Add a test case for the specified src file (if not specified, last src file compiled will be taken)."
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--set-test [nth test]" "Sets the input of the Nth test as input of \$MDS_INPUT."
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -g "--gui" "Run interactive mode with terminal GUI."
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -s "--submit " "Submit last built file."
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--flags" "Edit current compile flags."
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -x "--debug" "Self explained"
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -h "--help" "Show this"
-    printf "\nDeveloped by Jehú Jair Ruiz Villegas\n"
-    printf "Contact: jehuruvj@gmail.com\n"
+function is_vim_the_father() {
+    local vim_cmd=$(which vim)
+    local nvim_cmd=$(which nvim)
+    local nvim_qt_cmd=$(which nvim-qt)
+    local child=$(ps $$ | tail -n 1 | awk '{print $1}')
+    local parent=
+    while true
+    do
+        parent=$(ps -o ppid -p ${child} | tail -n 1 | awk '{print $1}')
+        if [[ ${parent} == 1 ]]
+        then
+            echo "NO"
+            break
+        fi
+
+        ps -o command -p ${parent} | tail -n 1 | grep -o -E "${vim_cmd}|${nvim_cmd}|${nvim_qt_cmd}" &> /dev/null
+        if [[ $(exit_is_zero $?) == YES ]]
+        then
+            echo "YES"
+            break
+        fi
+        child=${parent}
+    done
 }
 
 function init_vars() {
@@ -256,5 +283,32 @@ function enable_debug_if_specified() {
 
 function common_setup() {
     create_common_files
+    delete_old_files ${TEST_DIR}
+    delete_old_files ${FLAGS_DIR}
     init_vars
+}
+
+function display_help() {
+    printf "Usage: mdscode [options] file...\n"
+    printf "Options:\n"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -f "--file [type]" "Specify the file type (c,cpp,py,java). Default: cpp"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -n "--name [args...]" "Filename"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--ignore-rename" "Ignore applying naming convensions."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -c "--create" "Create file"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -b "--build" "Build the given source file (c,cpp,py,java)"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--force-build" "Always try to build the given source file (c,cpp,py,java)"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -e "--exec" "Executes last compiled file."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--exer" "Executes last compiled file without redirecting errors to output file."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -i "--io" "Choose the prevefered IO type (I,O,IO). Default: IO"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -t "--test" "Test last compiled bin"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -a "--add [no tests] [src file]" "Add a test case for the specified src file (if not specified, last src file compiled will be taken)."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--set-test [nth test]" "Sets the input of the Nth test as input of \$MDS_INPUT."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -g "--gui" "Run interactive mode with terminal GUI."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -s "--submit " "Submit last built file."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--flags" "Edit current compile flags."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -x "--debug" "Self explained"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -h "--help" "Show this"
+    printf "\nDeveloped by Jehú Jair Ruiz Villegas\n"
+    printf "Contact: jehuruvj@gmail.com\n"
+    exit 0
 }

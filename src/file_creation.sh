@@ -5,6 +5,12 @@ function apply_naming_convention() {
     declare -n filename=${1}
     local file_extension=${2}
 
+    if [[ ${IGNORE_RENAMING} == Y ]]
+    then
+        filename="${filename}.${file_extension}"
+        return 0
+    fi
+
     filename=$(echo ${filename} | sed "s/\.${file_extension}//g")
 
     # Remove weird characters
