@@ -62,18 +62,6 @@ function is_allowed_build_filetype() {
     fi
 }
 
-function save_last_build_info() {
-    CWSRC_FILE=${FILENAME}
-
-    # Last source file built
-    echo LANG=\"${FILETYPE}\" > ${BUILD_INFO}
-    cp -p ${FILEPATH}${FILENAME} ${TEMP_DIR}/${FILENAME}
-    echo TMP_SOURCE_FILE=\"${TEMP_DIR}/${FILENAME}\" >> ${BUILD_INFO}
-    echo ORIGINAL_SOURCE="$(realpath ${FILEPATH}${FILENAME})" >> ${BUILD_INFO}
-
-    save_flags
-}
-
 function update_flags() {
     local last_file_built=$(get_last_source_file)
     if [[ ${last_file_built} != ${FILENAME} ]]
@@ -90,7 +78,7 @@ function build() {
         if [[ $(is_build_required) = YES ]]
         then
             build_file
-            save_last_build_info
+            save_build_info
         else
             cout warning "Skipping build, using previous executable."
         fi

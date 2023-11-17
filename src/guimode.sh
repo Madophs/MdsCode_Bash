@@ -65,7 +65,6 @@ function start_wizard() {
     menu_choose_language
     input_filename
     show_menu_language_configs
-    save_flags
 }
 
 function exit_if_whiptail_not_installed() {
@@ -80,8 +79,4 @@ function start_gui() {
     exit_if_whiptail_not_installed
     set_newt_colors
     start_wizard
-
-    GUI="N"
-    # Let's keep it simple and run the command again with the params
-    ${SCRIPT_DIR}/mdscode -n "${FILENAME}" -f ${FILETYPE} -p ${TEMPLATE}
 }

@@ -87,6 +87,11 @@ function uva_submit() {
     local problem_id=$(uva_get_problem_id "${ORIGINAL_SOURCE}")
     local language_id=$(uva_get_lang_id "${ORIGINAL_SOURCE}")
 
+    if [[ -z ${problem_id} || -z ${language_id} ]]
+    then
+        cout error "Unable to uploaded. File: ${ORIGINAL_SOURCE}, problem_id: ${problem_id}"
+    fi
+
     curl -X POST -f -L -s -w '%{url_effective}' --compressed --cookie ${UVA_COOKIES_FILE} --cookie-jar ${UVA_COOKIES_FILE} -H "Content-Type: multipart/form-data" \
         -F localid=${problem_id}  -F language=${language_id} -F "codeupl=@${ORIGINAL_SOURCE}" ${UVA_SUBMIT_URL} &> /dev/null
 

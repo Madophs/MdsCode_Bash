@@ -1,7 +1,8 @@
 # If you want to customize the configs, export the desire config variable to overwrite it
-# Example: export MDS_EDITOR=vim
-MDS_EDITOR=vim
+# Example: export EDITOR_COMMAND=vim {{FILE}}
 EDITOR_COMMAND=vim --servername /tmp/mdssocket --remote-silent {{FILE}}
+EDITOR_SPLIT_COMMAND=vim -O2 {{FILE1}} {{FILE2}}
+EDITOR_DIFF_COMMAND=vimdiff {{FILE1}} {{FILE2}}
 OPEN_WITH_EDITOR=YES
 VIM_SERVERNAME=/tmp/mdssocket
 # values: UCWORDS, UPPERCASE, LOWERCASE

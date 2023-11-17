@@ -109,6 +109,9 @@ function menu_cpp_configs() {
             "Add test cases")
                 test_cases_setup_menu
             ;;
+            *)
+                CREATION="Y"
+            ;;
         esac
     else
         exit 1

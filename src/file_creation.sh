@@ -103,12 +103,14 @@ function create_file() {
                 cout warning "Replacing file."
                 cat ${tmp_file} > ${file_fullpath}
                 cout success "File \"${FILENAME}\" replaced successfully."
-                open_with_editor "${file_fullpath}"
             else
                 cout info "Wise choice, bye..."
             fi
+            save_build_info
+            open_with_editor "${file_fullpath}"
         else
             cat ${tmp_file} > ${file_fullpath}
+            save_build_info
             cout success "File \"${FILENAME}\" created successfully."
             open_with_editor "${file_fullpath}"
         fi

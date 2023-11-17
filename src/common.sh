@@ -117,6 +117,14 @@ function save_flags() {
     esac
 }
 
+function save_build_info() {
+    echo LANG=\"${FILETYPE}\" > ${BUILD_INFO}
+    cp -p ${FILEPATH}${FILENAME} ${TEMP_DIR}/${FILENAME}
+    echo TMP_SOURCE_FILE=\"${TEMP_DIR}/${FILENAME}\" >> ${BUILD_INFO}
+    echo ORIGINAL_SOURCE="$(realpath ${FILEPATH}${FILENAME})" >> ${BUILD_INFO}
+    save_flags
+}
+
 function open_with_editor() {
     if [[ ${CONFIGS_MAP['OPEN_WITH_EDITOR']} == YES ]]
     then

@@ -13,46 +13,46 @@ function start_flow() {
     if [[ ${GUI} == Y ]]
     then
         start_gui
-    else
-        if [[ ${CREATION} == Y ]]
-        then
-            create_file
-        fi
+    fi
 
-        if [[ ${CREATE_TESTS} == Y ]]
-        then
-            set_test
-        fi
+    if [[ ${CREATION} == Y ]]
+    then
+        create_file
+    fi
 
-        if [[ ${BUILDING} == Y ]]
-        then
-            build
-        fi
+    if [[ ${CREATE_TESTS} == Y ]]
+    then
+        set_test
+    fi
 
-        if [[ ${SET_TEST} != -1 ]]
-        then
-            set_nth_test_as_input
-        fi
+    if [[ ${BUILDING} == Y ]]
+    then
+        build
+    fi
 
-        if [[ ${EXECUTION} == Y ]]
-        then
-            if [[ ${TESTING} == Y ]]
-            then
-                testing
-            else
-                execute
-            fi
-        fi
+    if [[ ${SET_TEST} != -1 ]]
+    then
+        set_nth_test_as_input
+    fi
 
-        if [[ ${OPEN_FLAGS} == Y ]]
+    if [[ ${EXECUTION} == Y ]]
+    then
+        if [[ ${TESTING} == Y ]]
         then
-            open_flags
+            testing
+        else
+            execute
         fi
+    fi
 
-        if [[ ${SUBMIT} == Y ]]
-        then
-            submit_code
-        fi
+    if [[ ${OPEN_FLAGS} == Y ]]
+    then
+        open_flags
+    fi
+
+    if [[ ${SUBMIT} == Y ]]
+    then
+        submit_code
     fi
 }
 

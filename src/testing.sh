@@ -35,10 +35,14 @@ function set_test() {
         start_test_num=$(( ${start_test_num} + 1 ))
     fi
 
+    local editor_split_cmd_format=${CONFIGS_MAP['EDITOR_SPLIT_COMMAND']}
     local end_test_num=$(( ${start_test_num} + ${NO_TEST} ))
     for (( i=${start_test_num}; i < ${end_test_num}; i+=1 ))
     do
-        vim -O2 ${test_src_folder}/test_input_${i}.txt ${test_src_folder}/test_output_${i}.txt
+        local file1=${test_src_folder}/test_input_${i}.txt
+        local file2=${test_src_folder}/test_output_${i}.txt
+        local editor_split_cmd=$(echo "${editor_split_cmd_format}" | sed -e "s|{{FILE1}}|${file1}|g" -e "s|{{FILE2}}|${file2}|g")
+        eval "${editor_split_cmd}"
     done
 }
 
@@ -88,8 +92,11 @@ function testing() {
             printf "\nDo you want to check the mismatches? (y/n) "
             read -n 1 opt
 
-            if [[ ${opt} == "y" || ${opt} == "Y" ]]; then
-                vimdiff ${MDS_OUTPUT} ${test_src_folder}/test_output_${i}.txt
+            if [[ ${opt} == "y" || ${opt} == "Y" ]]
+            then
+                local correct_output=${test_src_folder}/test_output_${i}.txt
+                local editor_diff_cmd=$(echo "${CONFIGS_MAP['EDITOR_DIFF_COMMAND']}" | sed -e "s|{{FILE1}}|${correct_output}|g" -e "s|{{FILE2}}|${MDS_OUTPUT}|g")
+                eval "${editor_diff_cmd}"
             else
                 echo ""
                 cout info "Ok, don't worry."
