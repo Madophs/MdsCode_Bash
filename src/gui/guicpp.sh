@@ -111,6 +111,10 @@ function menu_cpp_configs() {
             ;;
             *)
                 CREATION="Y"
+                if [[ ${TEST_CASES_ARE_SET} == YES ]]
+                then
+                    SET_TEST_INDEX=0
+                fi
             ;;
         esac
     else

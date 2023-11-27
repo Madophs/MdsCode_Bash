@@ -1,5 +1,6 @@
 #!/bin/bash
 
+TIMEFORMAT="%Rs real %Us user %Ss sys"
 PS4='+($(basename ${BASH_SOURCE}):${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 SRC_DIR=${SCRIPT_DIR}/src
 RES_DIR=${SCRIPT_DIR}/res
@@ -52,23 +53,41 @@ function missing_argument_validation() {
     done
 }
 
+function set_shell_colors() {
+    RED='\e[1;31m'
+    GREEN='\e[1;32m'
+    YELLOW='\e[1;33m'
+    BLUE='\e[1;34m'
+    BLUEG='\e[1;5;34m'
+    PURPLE='\e[1;35m'
+    PURPLEG='\e[1;35m'
+    CYAN='\e[1;36m'
+    BLK='\e[0m'
+}
+
 function cout() {
     local color=$1
     shift
     local messsage="$@"
     case ${color} in
-        red|error|danger)
-        echo -e "\e[1;31m[ERROR]\e[0m ${messsage}" >&2
-        exit 1
+        red|error)
+            echo -e "${BLUE}[${RED}ERROR${BLUE}]${BLK} ${messsage}" >&2
+            exit 1
+        ;;
+        fault)
+            echo -e "${BLUE}[${PURPLE}FAULT${BLUE}]${BLK} ${messsage}" >&2
+        ;;
+        debug)
+            echo -e "${BLUEG}[${PURPLE}DEBUG${BLUEG}]${BLK} ${messsage}" >&2
         ;;
         green|success)
-        echo -e "\e[1;32m[SUCCESS]\e[0m ${messsage}" >&2
+            echo -e "${BLUE}[${GREEN}SUCCESS${BLUE}]${BLK} ${messsage}" >&2
         ;;
         yellow|warning)
-        echo -e "\e[1;33m[WARNING]\e[0m ${messsage}" >&2
+            echo -e "${BLUE}[${YELLOW}WARNING${BLUE}]${BLK} ${messsage}" >&2
         ;;
         blue|info)
-        echo -e "\e[1;36m[INFO]\e[0m ${messsage}" >&2
+            echo -e "${BLUE}[${CYAN}INFO${BLUE}]${BLK} ${messsage}" >&2
         ;;
     esac
 }
@@ -233,11 +252,8 @@ function exit_is_not_zero() {
 
 function is_digit() {
     local arg=${1}
-	grep -o -e '^[0-9]*$' <(echo ${arg}) &> /dev/null
-    if [[ $(exit_is_zero $?) == NO ]]
-    then
-        cout error "Invalid value ${arg}"
-    fi
+	grep -o -e '^[0-9]\+$' <(echo ${arg}) &> /dev/null
+    exit_is_zero $?
 }
 
 function set_var() {
@@ -276,6 +292,11 @@ function is_vim_the_father() {
     done
 }
 
+function is_script_getting_sourced() {
+    ps -o command $$ | tail -n 1 | grep -o -e "/bin/bash ${SCRIPT_DIR}/mdscode" &> /dev/null
+    exit_is_not_zero $?
+}
+
 function init_vars() {
     set_var ONLINE_JUDGE UVA # UVA Online Judge
 }
@@ -290,6 +311,7 @@ function enable_debug_if_specified() {
 }
 
 function common_setup() {
+    set_shell_colors
     create_common_files
     delete_old_files ${TEST_DIR}
     delete_old_files ${FLAGS_DIR}
@@ -308,7 +330,7 @@ function display_help() {
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -e "--exec" "Executes last compiled file."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--exer" "Executes last compiled file without redirecting errors to output file."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -i "--io" "Choose the prevefered IO type (I,O,IO). Default: IO"
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -t "--test" "Test last compiled bin"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -t "--test [default:0]" "Test last compiled source file."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -a "--add [no tests] [src file]" "Add a test case for the specified src file (if not specified, last src file compiled will be taken)."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--set-test [nth test]" "Sets the input of the Nth test as input of \$MDS_INPUT."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -g "--gui" "Run interactive mode with terminal GUI."

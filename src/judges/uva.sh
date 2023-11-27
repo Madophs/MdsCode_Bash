@@ -5,6 +5,7 @@ UVA_INDEX_URL=${UVA_BASE_URL}/index.php
 UVA_LOGIN_URL="${UVA_INDEX_URL}?option=com_comprofiler&task=login"
 UVA_COOKIES_FILE=${BUILD_DIR}/uva_cookies
 UVA_SUBMIT_URL="${UVA_INDEX_URL}?option=com_onlinejudge&Itemid=25&page=save_submission"
+UVA_SUBMISSIONS_URL="https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=9"
 
 function uva_get_hidden_params() {
     curl -f -L -s  ${UVA_BASE_URL} | grep -B8 'id=\"mod_login_remember\"' | awk '{print $3  $4}' | grep -v 'remember' | awk -F '[=\"]' '{print $3"="$6}' | tr '\n' '\&' | sed 's/\&$/\&remember=yes/g'
@@ -35,7 +36,7 @@ function uva_try_login() {
         if [[ ${attempts} > 0 ]]
         then
             cout warning "Incorrect Username or Password, retry? (y/n)"
-            read -n 1 opt
+            read -n opt
             if [[ ${opt} == 'n' || ${opt} == 'N' ]]
             then
                 exit 0
@@ -76,6 +77,65 @@ function uva_get_lang_id() {
     esac
 }
 
+function uva_verdict() {
+    cout info "Waiting for verdict..."
+    MAX_TRIES=30
+    local error_type=1
+    local problem_id=${1}
+    local datetime_before_submission=${2}
+    local latest_entry=$(curl -X GET --cookie ${UVA_COOKIES_FILE} -f -s -L --compressed ${UVA_SUBMISSIONS_URL} | grep '<tr class="sectiontableentry' -A 8 -m 1)
+    local latest_problem_id=$(echo ${latest_entry} | grep -o -e ">${problem_id}<" | grep -o -e '[0-9]\+')
+    for i in $(seq ${MAX_TRIES})
+    do
+        error_type=1
+        if [[ ${latest_problem_id} != ${problem_id} ]]
+        then
+            local latest_problem_id=$(echo ${latest_entry} | grep -o -e ">${problem_id}<" | grep -o -e '[0-9]\+')
+            error_type=2
+            sleep 2
+            continue
+        fi
+
+        local latest_entry=$(curl -X GET --cookie ${UVA_COOKIES_FILE} -f -s -L --compressed ${UVA_SUBMISSIONS_URL} | grep '<tr class="sectiontableentry' -A 8 -m 1)
+        local datetime_submission=$(date +%s -d "$(echo ${latest_entry} | grep -o -e '[0-9]\+-[0-9]\+-[0-9]\+ [0-9]\+:[0-9]\+:[0-9]\+')")
+        if [[ ${datetime_submission} < ${datetime_before_submission} ]]
+        then
+            error_type=3
+            sleep 2
+            continue
+        fi
+
+        declare -g verdict=$(echo ${latest_entry} | grep -m 1 -o -e "<td>[A-Z a-z']\+</td>" | awk -F '[<>]' '{print $3}')
+        if [[ -n $(echo ${verdict} | grep -o -i 'queue') ]]
+        then
+            sleep 2
+            continue
+        fi
+        break
+    done
+
+    if [[ ${MAX_TRIES} == ${i} ]]
+    then
+        case ${error_type} in
+            1)
+                cout error "Reached max number of tries"
+            ;;
+            2)
+                cout error "Couldn't find problem_id ${problem_id} in submission dashboard"
+            ;;
+            3)
+                local date_converted=$(date '+%F %T' -d @"${datetime_before_submission}")
+                cout error "Failed to find lastest submission maybe datetime [${date_converted}] is incorrect"
+            ;;
+        esac
+    elif [[ ${verdict} == Accepted ]]
+    then
+        cout success ${verdict}
+    else
+        cout error ${verdict}
+    fi
+}
+
 function uva_submit() {
     uva_try_login
 
@@ -86,19 +146,24 @@ function uva_submit() {
 
     local problem_id=$(uva_get_problem_id "${ORIGINAL_SOURCE}")
     local language_id=$(uva_get_lang_id "${ORIGINAL_SOURCE}")
+    local filename=$(get_last_source_file)
 
     if [[ -z ${problem_id} || -z ${language_id} ]]
     then
-        cout error "Unable to uploaded. File: ${ORIGINAL_SOURCE}, problem_id: ${problem_id}"
+        cout error "Unable to upload file: ${ORIGINAL_SOURCE}, problem_id: ${problem_id}"
     fi
 
+    cout info "Uploading... ${filename}"
+    # London TZ
+    local datetime_before_submission=$(TZ="GB" date +%s)
     curl -X POST -f -L -s -w '%{url_effective}' --compressed --cookie ${UVA_COOKIES_FILE} --cookie-jar ${UVA_COOKIES_FILE} -H "Content-Type: multipart/form-data" \
         -F localid=${problem_id}  -F language=${language_id} -F "codeupl=@${ORIGINAL_SOURCE}" ${UVA_SUBMIT_URL} &> /dev/null
 
     if [[ $(exit_is_zero $?) == YES ]]
     then
-        cout success "File uploaded!!!"
+        cout info "File uploaded!!!"
+        uva_verdict "${problem_id}" "${datetime_before_submission}"
     else
-        cout danger "Something went wrong :("
+        cout error "Something went wrong :("
     fi
 }

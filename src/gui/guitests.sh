@@ -5,6 +5,7 @@ TEST_CASES_ARE_SET="NO"
 
 function load_test_cases() {
     missing_argument_validation 1 ${1}
+    TEST_CASES_ARE_SET="NO"
     local tests_folder=${1}
     local test_src_folder=${TEST_DIR}/${tests_folder}
     if [[ ! -d ${test_src_folder} ]]

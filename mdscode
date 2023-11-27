@@ -1,6 +1,18 @@
 #!/bin/bash
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+shell=$(ps -o command $$ | tail -n 1 | awk '{print $0}' | awk -F '/' '{print $NF}')
+if [[ ${shell} == zsh ]]
+then
+    SCRIPT_DIR=$(cd -P -- "$(dirname -- "$0")" && printf '%s\n' "$(pwd -P)/$(basename -- "$0")" | sed 's/\/mdscode//g')
+else
+    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+fi
+
 SRC_DIR=${SCRIPT_DIR}/src
 source ${SRC_DIR}/main_flow.sh
-start $@
+
+if [[ $(is_script_getting_sourced) == NO ]]
+then
+    start $@
+fi
+

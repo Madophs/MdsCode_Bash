@@ -22,17 +22,12 @@ function start_flow() {
 
     if [[ ${CREATE_TESTS} == Y ]]
     then
-        set_test
+        create_test
     fi
 
     if [[ ${BUILDING} == Y ]]
     then
         build
-    fi
-
-    if [[ ${SET_TEST} != -1 ]]
-    then
-        set_nth_test_as_input
     fi
 
     if [[ ${EXECUTION} == Y ]]
@@ -50,10 +45,21 @@ function start_flow() {
         open_flags
     fi
 
+    if [[ ${SET_TEST_INDEX} != -1 ]]
+    then
+        set_nth_test_as_input
+    fi
+
     if [[ ${SUBMIT} == Y ]]
     then
         submit_code
     fi
+
+    if [[ ${CREATION} == Y ]]
+    then
+        open_with_editor "${FILEPATH}${FILENAME}"
+    fi
+
 }
 
 function start() {

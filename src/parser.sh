@@ -68,7 +68,11 @@ function parse_args() {
             -t|--test)
                 TESTING="Y"
                 EXECUTION="Y"
-                eval $(set_and_shift_cwsrc_file ${2})
+                if [[ $(is_digit ${2}) == YES ]]
+                then
+                    STARTING_TEST=${2}
+                    shift
+                fi
                 shift
                 ;;
             -a|--add)
@@ -81,7 +85,7 @@ function parse_args() {
                 ;;
             --set-test)
                 param_validation ${1} ${2}
-                SET_TEST=${2}
+                SET_TEST_INDEX=${2}
                 eval $(set_and_shift_cwsrc_file ${3})
                 shift
                 shift

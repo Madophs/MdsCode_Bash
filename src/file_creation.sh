@@ -13,6 +13,9 @@ function apply_naming_convention() {
 
     filename=$(echo ${filename} | sed "s/\.${file_extension}//g")
 
+    # trim leading/trailing whitespaces
+    filename=$(echo ${filename} | sed 's/^ *//g;s/ *$//g')
+
     # Remove weird characters
     filename=$(sed 's/[^a-zA-Z 0-9\-_]//g' <(echo ${filename}))
 
@@ -20,18 +23,29 @@ function apply_naming_convention() {
     filename=$(sed 's/á/a/g;s/é/e/g;s/í/i/g;s/ó/o/g;s/ú/u/g;s/ü/u/g;s/ñ/n/g' <(echo $filename))
     filename=$(sed 's/Á/A/g;s/É/E/g;s/Í/I/g;s/Ó/O/g;s/Ú/U/g;s/Ü/U/g;s/Ñ/N/g' <(echo $filename))
 
-    if [[ ${CONFIGS_MAP['CASETYPE']} == UCWORDS ]]
+    if [[ ${CONFIGS_MAP['PROBLEM_ID_AT_END']} == YES ]]
     then
-        filename=$(echo ${filename} | sed -e 's/\b\(.\)/\u\1/g')
-    elif [[ ${CONFIGS_MAP['CASETYPE']} == UPPERCASE ]]
-    then
-        filename=$(echo ${filename} | tr '[:lower:]' '[:upper:]')
-    elif [[ ${CONFIGS_MAP['CASETYPE']} == LOWERCASE ]]
-    then
-        filename=$(echo ${filename} | tr '[:upper:]' '[:lower:]')
-    else
-        cout error "Unknown casetype [${CONFIGS_MAP['CASETYPE']}]"
+        local problem_id=$(echo ${filename} | grep -o -e '^[0-9]\+')
+        if [[ -n ${problem_id} ]]
+        then
+            filename=$(echo ${filename} | sed "s/^${problem_id}//g;s/^ *//g;s/\(.*\)/\1 ${problem_id}/g")
+        fi
     fi
+
+    case ${CONFIGS_MAP['CASETYPE']} in
+        UCWORDS)
+            filename=$(echo ${filename} | sed -e 's/\b\(.\)/\u\1/g')
+        ;;
+        UPPERCASE)
+            filename=$(echo ${filename} | tr '[:lower:]' '[:upper:]')
+        ;;
+        LOWERCASE)
+            filename=$(echo ${filename} | tr '[:upper:]' '[:lower:]')
+        ;;
+        *)
+            cout warning "Ignoring unknown casetype ${CONFIGS_MAP['CASETYPE']}"
+        ;;
+    esac
 
     filename=$(sed "s/ /${CONFIGS_MAP['WHITESPACE_REPLACE']}/g;s/-/${CONFIGS_MAP['WHITESPACE_REPLACE']}/g" <(echo ${filename}))
     filename="${filename}.${file_extension}"
@@ -107,17 +121,14 @@ function create_file() {
                 cout info "Wise choice, bye..."
             fi
             save_build_info
-            open_with_editor "${file_fullpath}"
         else
             cat ${tmp_file} > ${file_fullpath}
             save_build_info
             cout success "File \"${FILENAME}\" created successfully."
-            open_with_editor "${file_fullpath}"
         fi
     else
         load_template ${tmp_file} ${FILETYPE}
         cout warning "Filename not specified, file generated with a random name \"${tmp_filename}\""
         cp ${tmp_file} .
-        open_with_editor "${tmp_filename}"
     fi
 }

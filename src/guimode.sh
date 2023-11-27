@@ -35,12 +35,14 @@ function set_newt_colors() {
 }
 
 function input_filename() {
-    FILENAME=$(whiptail --inputbox "Filename:" 10 100 "${FILENAME}" 3>&1 1>&2 2>&3)
     if [[ -z ${FILENAME} ]]
     then
-        cout error "Exiting: you didn't specify a filename."
+        FILENAME=$(whiptail --inputbox "Filename:" 10 100 "${FILENAME}" 3>&1 1>&2 2>&3)
+        if [[ -z ${FILENAME} ]]
+        then
+            cout error "Exiting: you didn't specify a filename."
+        fi
     fi
-    apply_naming_convention FILENAME ${FILETYPE}
 }
 
 function show_menu_language_configs() {
@@ -52,18 +54,27 @@ function show_menu_language_configs() {
 }
 
 function menu_choose_language() {
-    local language=$(whiptail --title "Choose your weapon" --menu "" 18 100 10 "${AVAILABLE_LANGUAGES[@]}" 3>&1 1>&2 2>&3)
-    if [[ -n "${language}" ]]
+    FILETYPE=$(get_file_extension ${FILENAME})
+    if [[ -z ${FILETYPE} ]]
     then
-        FILETYPE=$(get_filetype_by_language ${language})
-    else
-        exit 1
+        local language=$(whiptail --title "Choose your weapon" --menu "" 18 100 10 "${AVAILABLE_LANGUAGES[@]}" 3>&1 1>&2 2>&3)
+        if [[ -n "${language}" ]]
+        then
+            FILETYPE=$(get_filetype_by_language ${language})
+        else
+            exit 1
+        fi
     fi
 }
 
-function start_wizard() {
-    menu_choose_language
+function file_creation_wizard() {
     input_filename
+    menu_choose_language
+    apply_naming_convention FILENAME ${FILETYPE}
+}
+
+function start_wizard() {
+    file_creation_wizard
     show_menu_language_configs
 }
 

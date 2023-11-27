@@ -19,8 +19,11 @@ function align_tests() {
     done
 }
 
-function set_test() {
-    is_digit ${NO_TEST}
+function create_test() {
+    if [[ $(is_digit ${NO_TEST}) == NO ]]
+    then
+        cout error "Invalid value [${NO_TEST}]"
+    fi
 
     local test_src_folder_name=$(echo ${CWSRC_FILE} | sed 's/\./_/g')
     local test_src_folder=${TEST_DIR}/${test_src_folder_name}
@@ -47,9 +50,10 @@ function set_test() {
 }
 
 function set_nth_test_as_input() {
+    : ${CWSRC_FILE:=$(get_last_source_file)}
     local test_src_folder_name=$(echo ${CWSRC_FILE} | sed 's/\./_/g')
     local test_src_folder=${TEST_DIR}/${test_src_folder_name}
-    local target_test=${test_src_folder}/test_input_${SET_TEST}.txt
+    local target_test=${test_src_folder}/test_input_${SET_TEST_INDEX}.txt
     if [[ -f ${target_test} ]]
     then
         cat ${target_test} > ${MDS_INPUT}
@@ -59,18 +63,24 @@ function set_nth_test_as_input() {
 }
 
 function testing() {
+    : ${CWSRC_FILE:=$(get_last_source_file)}
     local test_src_folder_name=$(echo ${CWSRC_FILE} | sed 's/\./_/g')
     local test_src_folder=${TEST_DIR}/${test_src_folder_name}
     local no_test=$(( $(ls -l ${test_src_folder}/test*txt | wc -l) / 2 ))
 
-    for (( i=0; i < ${no_test}; i+=1 ))
+    if [[ ${no_test} < ${STARTING_TEST} ]]
+    then
+        cout error "Test index out of bounds."
+    fi
+
+    for (( i=${STARTING_TEST}; i < ${no_test}; i+=1 ))
     do
-        cout info "Test Case #${i}"
+        cout info "Test case #${i}"
         execute ${test_src_folder}/test_input_${i}.txt
         diff ${MDS_OUTPUT} ${test_src_folder}/test_output_${i}.txt > /dev/null
         if [[ $? != 0 ]]
         then
-            printf "Test #${i}\n"
+            cout fault "Failed Test case #${i}"
             local max_lines=300;
             local lines_cont=1
 
