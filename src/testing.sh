@@ -62,6 +62,26 @@ function set_nth_test_as_input() {
     fi
 }
 
+function edit_nth_test() {
+    if [[ $(is_digit ${EDIT_TEST_INDEX}) == NO ]]
+    then
+        cout error "Invalid value [${NO_TEST}]"
+    fi
+
+    : ${CWSRC_FILE:=$(get_last_source_file)}
+    local test_src_folder_name=$(echo ${CWSRC_FILE} | sed 's/\./_/g')
+    local test_src_folder=${TEST_DIR}/${test_src_folder_name}
+    local target_input_test=${test_src_folder}/test_input_${EDIT_TEST_INDEX}.txt
+    local target_output_test=${test_src_folder}/test_output_${EDIT_TEST_INDEX}.txt
+    if [[ -f ${target_input_test} ]]
+    then
+        local edit_test_command=$(echo ${CONFIGS_MAP['EDITOR_COMMAND']} | sed "s|{{FILE}}|${target_output_test} ${target_input_test}|g")
+        eval ${edit_test_command}
+    else
+        cout error "Test not found."
+    fi
+}
+
 function testing() {
     : ${CWSRC_FILE:=$(get_last_source_file)}
     local test_src_folder_name=$(echo ${CWSRC_FILE} | sed 's/\./_/g')
@@ -105,7 +125,12 @@ function testing() {
             if [[ ${opt} == "y" || ${opt} == "Y" ]]
             then
                 local correct_output=${test_src_folder}/test_output_${i}.txt
-                local editor_diff_cmd=$(echo "${CONFIGS_MAP['EDITOR_DIFF_COMMAND']}" | sed -e "s|{{FILE1}}|${correct_output}|g" -e "s|{{FILE2}}|${MDS_OUTPUT}|g")
+                local test_input=${test_src_folder}/test_input_${i}.txt
+                local editor_diff_cmd=$(echo "${CONFIGS_MAP['EDITOR_DIFF_COMMAND']}" | \
+                    sed -e "s|{{FILE1}}|${correct_output}|g" \
+                    -e "s|{{FILE2}}|${MDS_OUTPUT}|g" \
+                    -e "s|{{FILE3}}|${test_input}|g")
+                cout debug ${editor_diff_cmd}
                 eval "${editor_diff_cmd}"
             else
                 echo ""

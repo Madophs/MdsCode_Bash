@@ -90,6 +90,12 @@ function parse_args() {
                 shift
                 shift
                 ;;
+            --edit-test)
+                param_validation ${1} ${2}
+                EDIT_TEST_INDEX=${2}
+                shift
+                shift
+                ;;
             -p|--template)
                 param_validation ${1} ${2}
                 TEMPLATE=${2}

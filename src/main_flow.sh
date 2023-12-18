@@ -50,6 +50,11 @@ function start_flow() {
         set_nth_test_as_input
     fi
 
+    if [[ ${EDIT_TEST_INDEX} != -1 ]]
+    then
+        edit_nth_test
+    fi
+
     if [[ ${SUBMIT} == Y ]]
     then
         submit_code
@@ -64,8 +69,8 @@ function start_flow() {
 
 function start() {
     enable_debug_if_specified "$@"
-    parse_args "$@"
     common_setup
+    parse_args "$@"
     load_configs
     start_flow
 }
