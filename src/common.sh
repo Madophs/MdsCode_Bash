@@ -2,25 +2,32 @@
 
 TIMEFORMAT="%Rs real %Us user %Ss sys"
 PS4='+($(basename ${BASH_SOURCE}):${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+
+# App directories
 SRC_DIR=${SCRIPT_DIR}/src
 RES_DIR=${SCRIPT_DIR}/res
 CONFIG_DIR=${SCRIPT_DIR}/configs
 CXXINCLUDE_DIR=${RES_DIR}/include/
 TEMPLATES_DIR=${RES_DIR}/templates
-TEMP_FILE="" # Temporal file
-TEMP_DIR="/tmp/mdscode"
-BUILD_DIR=${SCRIPT_DIR}/build
+
+# App data directories
+LOCAL_DATA_DIR="${HOME}/.local/share/mdscode"
+IO_DIR=${LOCAL_DATA_DIR}/io
+TEST_DIR=${LOCAL_DATA_DIR}/tests
+BUILD_DIR=${LOCAL_DATA_DIR}/build
 BUILD_INFO=${BUILD_DIR}/last.txt
 FLAGS_DIR=${BUILD_DIR}/flags
-IO_DIR=${RES_DIR}/io
 MDS_INPUT=${IO_DIR}/input
 MDS_OUTPUT=${IO_DIR}/output
-TEST_DIR=${RES_DIR}/tests
+TEMP_DIR="/tmp/mdscode"
+
+# Help menu columns width
 WIDTH_1ST_OP=5
 WIDTH_2ND_OP=28
 
 function create_common_files() {
     mkdir -p ${TEMP_DIR}
+    mkdir -p ${LOCAL_DATA_DIR}
     mkdir -p ${BUILD_DIR}
     mkdir -p ${IO_DIR}
     mkdir -p ${TEST_DIR}
@@ -140,7 +147,7 @@ function save_build_info() {
     echo LANG=\"${FILETYPE}\" > ${BUILD_INFO}
     cp -p ${FILEPATH}${FILENAME} ${TEMP_DIR}/${FILENAME}
     echo TMP_SOURCE_FILE=\"${TEMP_DIR}/${FILENAME}\" >> ${BUILD_INFO}
-    echo ORIGINAL_SOURCE="$(realpath ${FILEPATH}${FILENAME})" >> ${BUILD_INFO}
+    echo ORIGINAL_SOURCE="\"$(realpath ${FILEPATH}${FILENAME})\"" >> ${BUILD_INFO}
     save_flags
 }
 
@@ -321,7 +328,7 @@ function common_setup() {
 function display_help() {
     printf "Usage: mdscode [options] file...\n"
     printf "Options:\n"
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -f "--file [type]" "Specify the file type (c,cpp,py,java). Default: cpp"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -f "--type [type]" "Specify the file type (c,cpp,py,java). Default: cpp"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -n "--name [args...]" "Filename"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--ignore-rename" "Ignore applying naming convensions."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -c "--create" "Create file"
@@ -329,13 +336,13 @@ function display_help() {
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--force-build" "Always try to build the given source file (c,cpp,py,java)"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -e "--exec" "Executes last compiled file."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--exer" "Executes last compiled file without redirecting errors to output file."
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -i "--io" "Choose the prevefered IO type (I,O,IO). Default: IO"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -i "--io" "Choose the prefered IO type (I,O,IO). Default: IO"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -t "--test [default:0]" "Test last compiled source file."
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -a "--add [no tests] [src file]" "Add a test case for the specified src file (if not specified, last src file compiled will be taken)."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -a "--add-test [no tests] [file]" "Add a test case for the specified src file (if not specified, last src file compiled will be taken)."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--set-test [nth test]" "Sets the input of the Nth test as input of \$MDS_INPUT."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--edit-test [nth test]" "Edit the nth test."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -g "--gui" "Run interactive mode with terminal GUI."
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -s "--submit " "Submit last built file."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -s "--submit " "Submit last built file. (UVA Judge)"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--flags" "Edit current compile flags."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -x "--debug" "Self explained"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -h "--help" "Show this"

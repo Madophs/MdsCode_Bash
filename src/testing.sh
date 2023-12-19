@@ -86,11 +86,16 @@ function testing() {
     : ${CWSRC_FILE:=$(get_last_source_file)}
     local test_src_folder_name=$(echo ${CWSRC_FILE} | sed 's/\./_/g')
     local test_src_folder=${TEST_DIR}/${test_src_folder_name}
-    local no_test=$(( $(ls -l ${test_src_folder}/test*txt | wc -l) / 2 ))
+    local no_test=$(( $(ls -l ${test_src_folder}/test*txt 2> /dev/null | wc -l) / 2 ))
 
     if [[ ${no_test} < ${STARTING_TEST} ]]
     then
         cout error "Test index out of bounds."
+    fi
+
+    if [[ ${no_test} == 0 ]]
+    then
+        cout error "No tests found"
     fi
 
     for (( i=${STARTING_TEST}; i < ${no_test}; i+=1 ))
@@ -130,7 +135,6 @@ function testing() {
                     sed -e "s|{{FILE1}}|${correct_output}|g" \
                     -e "s|{{FILE2}}|${MDS_OUTPUT}|g" \
                     -e "s|{{FILE3}}|${test_input}|g")
-                cout debug ${editor_diff_cmd}
                 eval "${editor_diff_cmd}"
             else
                 echo ""

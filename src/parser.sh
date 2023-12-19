@@ -10,18 +10,18 @@ function parse_args() {
 
     while (( $# ))
     do
-        case $1 in
+        case ${1} in
             -h|--help)
                 display_help
                 ;;
-            -f|--file-type)
+            -f|--type)
                 param_validation ${1} ${2}
                 FILETYPE="${2}"
                 CREATION="Y"
                 shift
                 shift
                 ;;
-            -n|--filename)
+            -n|--name)
                 param_validation ${1} ${2}
                 FILENAME=${2}
                 shift
@@ -75,7 +75,7 @@ function parse_args() {
                 fi
                 shift
                 ;;
-            -a|--add)
+            -a|--add-test)
                 param_validation ${1} ${2}
                 NO_TEST=${2}
                 CREATE_TESTS="Y"

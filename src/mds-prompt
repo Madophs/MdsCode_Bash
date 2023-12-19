@@ -1,13 +1,154 @@
-#!/bin/sh
+#!/bin/bash
+
+__MDS_LOCAL_DATA_DIR=${HOME}/.local/share/mdscode
+__MDS_TEST_DIR=${__MDS_LOCAL_DATA_DIR}/tests
+__MDS_BUILD_DIR=${__MDS_LOCAL_DATA_DIR}/build
+
+__mds_get_equivalent() {
+    local opt_keyword=${1}
+    local opt_list=(-f --type -n --name -c --create -b --build -e --exec -i --io -t --test -a --add-test -g --gui -s --submit -x --debug -h --help)
+    for (( i=0; i < ${#opt_list[@]}; i+=1 ))
+    do
+        local curr_opt=${opt_list[${i}]}
+        if [[ "${opt_keyword}" == "${curr_opt}" ]]
+        then
+            if [[ ${curr_opt} == --* ]]
+            then
+                i=$(( i - 1 ))
+                printf "${opt_list[${i}]}"
+            else
+                i=$(( i + 1 ))
+                printf "${opt_list[${i}]}"
+            fi
+            return 0
+        fi
+    done
+    printf "--dummy"
+}
+
+__mds_cmd_contains() {
+    local keyword=${1}
+    local keyword2=$(__mds_get_equivalent "${keyword}")
+    local comp_words=$(( ${#COMP_WORDS[@]} - 1 ))
+    local matches_counter=0
+    for (( i=0; i<comp_words; i+=1 ))
+    do
+        if [[ ${keyword} == ${COMP_WORDS[${i}]} || ${keyword2} == ${COMP_WORDS[${i}]} ]]
+        then
+            matches_counter=$(( matches_counter + 1 ))
+            if [[ ${matches_counter} == 2 ]]
+            then
+                echo YES
+                return 0
+            fi
+        fi
+    done
+    echo NO
+}
+
+__mds_get_latest_compiled_files() {
+    local files=( $(ls ${__MDS_BUILD_DIR}/flags | sed 's|\.sh||g') )
+    local file_list=""
+    for (( i=0; i < ${#files[@]}; i+=1 ))
+    do
+        file_list="\"${files[${i}]}\" ${files}"
+    done
+    echo ${file_list}
+}
+
+__mds_get_test_enum_list() {
+    source ${__MDS_BUILD_DIR}/last.txt
+    local test_name=$( echo ${ORIGINAL_SOURCE} | awk -F '/' '{print $NF}' | sed 's|\.|_|g')
+    local test_dir_path="${__MDS_TEST_DIR}/${test_name}"
+    local files_no=$(( $(ls -l "${test_dir_path}" 2> /dev/null | wc -l) / 2 ))
+
+    if [[ ${files_no} == 0 ]]
+    then
+        echo "0"
+        return 0
+    fi
+
+    local enum_list=""
+    for (( i=0; i < ${files_no}; i+=1 ))
+    do
+        enum_list="${i} ${enum_list}"
+    done
+    echo ${enum_list}
+}
+
+__mds_filterout() {
+    local arg_list=${1}
+    local comp_words=$(( ${#COMP_WORDS[@]} - 1 ))
+    for (( i=0; i<comp_words; i+=1 ))
+    do
+        local option=${COMP_WORDS[${i}]}
+        if [[ ${option} == -* ]]
+        then
+            local option_equ=$(__mds_get_equivalent "${option}")
+            arg_list=$(echo ${arg_list} | sed -e "s|${option}||g" -e "s|${option_equ}||g")
+        fi
+    done
+    echo "${arg_list}"
+}
 
 _mds() {
     local cur prev opts
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="--help --verbose --version"
 
-    if [[ ${cur} == -* ]] ; then
+    if [[ ${prev} == "-h" || ${prev} == "--help" ]]
+    then
+        return 0
+    fi
+
+    if [[ ( ${prev} == "-f" || ${prev} == "--type" ) && $(__mds_cmd_contains "${prev}") == NO ]]
+    then
+        opts="c cpp java py rs"
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+
+    if [[ (${prev} == "-n" || ${prev} == "--name") && $(__mds_cmd_contains "${prev}") == NO ]]
+    then
+        opts=$(__mds_get_latest_compiled_files)
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+
+    if [[ (${prev} == "--set-test" || ${prev} == "--edit-test") && $(__mds_cmd_contains "${prev}") == NO ]]
+    then
+        opts=$(__mds_get_test_enum_list)
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+
+    if [[ (${prev} == "-t" || ${prev} == "--test") && $(__mds_cmd_contains "${prev}") == NO ]]
+    then
+        opts=$(__mds_get_test_enum_list)
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+
+    if [[ (${prev} == "-i" || ${prev} == "--io") && $(__mds_cmd_contains "${prev}") == NO ]]
+    then
+        opts="IO I O"
+        opts=$(__mds_filterout "${opts}")
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+
+    if [[ ${cur} == --* ]]
+    then
+        opts="--type --name --ignore-name --create --build --force-build --exec --exer --io --test --add --set-test --edit-test --gui --submit --flags --debug --help"
+        opts=$(__mds_filterout "${opts}")
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+
+    if [[ ${cur} == * ]] ; then
+        opts="-f -n -c -b -e -i -t -a -g -x -h"
+        opts=$(__mds_filterout "${opts}")
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
     fi
