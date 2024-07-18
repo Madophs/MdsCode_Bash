@@ -146,7 +146,8 @@ _mds() {
         return 0
     fi
 
-    if [[ ${cur} == * ]] ; then
+    if [[ ${cur} == * ]]
+    then
         opts="-f -n -c -b -e -i -t -a -g -x -h"
         opts=$(__mds_filterout "${opts}")
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )

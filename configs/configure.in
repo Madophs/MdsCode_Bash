@@ -21,3 +21,6 @@ CXX_AVAILABLE_FLAGS=-O0 -O2 -O3 -Wall -pipe -pthread -Wextra -g \
 CCCOMPILER=gcc
 CC_FLAGS=-Wall -Wextra -g
 PYTHON_BIN=python3
+
+# For uva judge online submission timestamps
+UVA_TIMEZONE=Iceland

@@ -79,7 +79,7 @@ function uva_get_lang_id() {
 
 function uva_verdict() {
     cout info "Waiting for verdict..."
-    MAX_TRIES=30
+    MAX_TRIES=20
     local error_type=1
     local problem_id=${1}
     local datetime_before_submission=${2}
@@ -124,8 +124,7 @@ function uva_verdict() {
                 cout error "Couldn't find problem_id ${problem_id} in submission dashboard"
             ;;
             3)
-                local date_converted=$(date '+%F %T' -d @"${datetime_before_submission}")
-                cout error "Failed to find lastest submission maybe datetime [${date_converted}] is incorrect"
+                cout error "Failed to find lastest submission"
             ;;
         esac
     elif [[ ${verdict} == Accepted ]]
@@ -134,6 +133,15 @@ function uva_verdict() {
     else
         cout error ${verdict}
     fi
+}
+
+function set_upload_date()
+{
+    declare -n current_date_ref=${1}
+    declare -n formatted_date_ref=${2}
+    export TZ="${CONFIGS_MAP['UVA_TIMEZONE']}"
+    current_date_ref=$(date +%s)
+    formatted_date_ref=$(date '+%F %T' -d @"${current_date_ref}")
 }
 
 function uva_submit() {
@@ -153,9 +161,11 @@ function uva_submit() {
         cout error "Unable to upload file: ${ORIGINAL_SOURCE}, problem_id: ${problem_id}"
     fi
 
+    set_upload_date datetime_before_submission date_formatted
     cout info "Uploading... ${filename}"
-    # London TZ
-    local datetime_before_submission=$(TZ="GB" date +%s)
+    cout info "Submission date: ${date_formatted}"
+
+    # file upload
     curl -X POST -f -L -s -w '%{url_effective}' --compressed --cookie ${UVA_COOKIES_FILE} --cookie-jar ${UVA_COOKIES_FILE} -H "Content-Type: multipart/form-data" \
         -F localid=${problem_id}  -F language=${language_id} -F "codeupl=@${ORIGINAL_SOURCE}" ${UVA_SUBMIT_URL} &> /dev/null
 
