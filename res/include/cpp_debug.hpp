@@ -7,6 +7,8 @@
 #include <iomanip>
 #include <typeinfo>
 
+#if __cplusplus >= 201103L
+
 #ifdef __GNUG__
 #include <memory>
 #include <cxxabi.h>
@@ -24,7 +26,8 @@ inline std::string demangle(const char* name)
 }
 #else
 std::string demangle(const char* name) { return name; }
-#endif
+#endif // ifdef __GNUG__
+
 
 inline bool mds_string_is_rvalue(std::string varname)
 {
@@ -113,3 +116,5 @@ void mds_debug(std::ostream& out, int line_number, Arg&& arg, Args&&... args)
 }
 
 #define debug(...) mds_debug(std::cerr, __LINE__, #__VA_ARGS__, __VA_ARGS__);
+
+#endif // if __cpluscplus >= 201103L
