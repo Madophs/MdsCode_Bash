@@ -3,3 +3,4 @@ output
 build/
 res/tests
 tags
+*.class

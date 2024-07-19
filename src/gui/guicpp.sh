@@ -10,17 +10,6 @@ function set_global_cpp_variables() {
     declare -g -a AVAILABLE_CPP_FLAGS=(${CONFIGS_MAP['CXX_AVAILABLE_FLAGS']})
 }
 
-function preload_cpp_templates() {
-    local available_templates=($(ls -l ${TEMPLATES_DIR}/*${FILETYPE} | awk -F '/' '{print $NF}'))
-    local item
-    MENU_CPP_TEMPLATES=()
-    for item in "${available_templates[@]}"
-    do
-        MENU_CPP_TEMPLATES+=(${item})
-        MENU_CPP_TEMPLATES+=("")
-    done
-}
-
 function preload_cpp_flags() {
     MENU_CPP_FLAGS=()
     local index=0
@@ -75,24 +64,14 @@ function menu_cpp_flags() {
     fi
 }
 
-function menu_cpp_templates() {
-    local template_choice=$(whiptail --title "Templates" --menu -- "" 18 100 10 "${MENU_CPP_TEMPLATES[@]}" 3>&1 1>&2 2>&3)
-    if [ -n "${template_choice}" ]
-    then
-        TEMPLATE=${template_choice}
-        menu_cpp_configs
-    else
-        exit 1
-    fi
-}
-
 function menu_cpp_configs() {
     local choice_cpp_setup=$(whiptail --title "C++ Setup" --menu -- "" 18 200 10 \
     "C++ Standard " "${CPP_STANDARD}" \
     "Flags " "${CPP_STANDARD}${CPP_FLAGS}" \
     "Template" "${TEMPLATE}" \
     "Add test cases" "${TEST_CASES_ARE_SET}" \
-    "Continue" "" 3>&1 1>&2 2>&3)
+    "Continue (create/open)" ""
+    "Close" "" 3>&1 1>&2 2>&3)
 
     if [ -n "${choice_cpp_setup}" ]
     then
@@ -104,12 +83,12 @@ function menu_cpp_configs() {
                 menu_cpp_flags
             ;;
             "Template")
-                menu_cpp_templates
+                menu_templates ${FUNCNAME} MENU_CPP_TEMPLATES
             ;;
             "Add test cases")
-                test_cases_setup_menu
+                test_cases_setup_menu ${FUNCNAME}
             ;;
-            *)
+            "Continue")
                 CREATION="Y"
                 if [[ ${TEST_CASES_ARE_SET} == YES ]]
                 then
@@ -125,7 +104,7 @@ function menu_cpp_configs() {
 function menu_cpp_setup() {
     set_global_cpp_variables
     preload_cpp_flags
-    preload_cpp_templates
+    preload_templates MENU_CPP_TEMPLATES
     load_test_cases $(get_test_folder_name ${FILENAME})
     set_default_template ${FILETYPE}
     menu_cpp_configs

@@ -1,7 +1,9 @@
 #!/bin/bash
 
+source ${SRC_DIR}/gui/guiutils.sh
 source ${SRC_DIR}/gui/guitests.sh
 source ${SRC_DIR}/gui/guicpp.sh
+source ${SRC_DIR}/gui/guijava.sh
 
 AVAILABLE_LANGUAGES=("C++" "" "C Language" "" "Java" "" "Python" "" "Rust" "")
 
@@ -49,6 +51,9 @@ function show_menu_language_configs() {
     case ${FILETYPE} in
         cpp)
             menu_cpp_setup
+            ;;
+        java)
+            menu_java_setup
             ;;
     esac
 }

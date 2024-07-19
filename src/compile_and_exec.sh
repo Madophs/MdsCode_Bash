@@ -10,9 +10,8 @@ function is_build_required() {
         local current_file=$(echo "${FILEPATH}${FILENAME}" | awk -F '/' '{print $NF}')
         if [[ "${current_file}" == "${TMP_SOURCE_FILE}" ]]
         then
-            local executable=${BUILD_DIR}/run
             local file_last_time_written=$(ls -l --time-style full-iso "${FILEPATH}${FILENAME}" | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
-            local bin_last_time_written=$(ls -l --time-style full-iso ${executable} | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
+            local bin_last_time_written=$(ls -l --time-style full-iso ${BINARY_PATH} | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
             if [[ ${file_last_time_written} < ${bin_last_time_written} ]]
             then
                 echo "NO"
@@ -48,6 +47,10 @@ function build_file() {
         py)
             # python is an intepreted language, therefore we only copy the file to build directory
             cp -f ${FILEPATH}${FILENAME} ${BUILD_DIR}/run
+            ;;
+        java)
+            ${CONFIGS_MAP['JAVA_COMPILER']} ${FILEPATH}${FILENAME} -d ${BUILD_DIR}
+            show_status_compilation_message $?
             ;;
     esac
 }
@@ -132,6 +135,10 @@ function execute() {
             ;;
         py)
             eval time ${CONFIGS_MAP['PYTHON_BIN']} ${BUILD_DIR}/run ${IO_ARGS}
+            ;;
+        java)
+            cd ${BUILD_DIR}
+            eval time ${CONFIGS_MAP['JAVA_EXEC']} Main ${IO_ARGS}
             ;;
         *)
             cout error "No last build info found."

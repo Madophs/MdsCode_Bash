@@ -63,13 +63,23 @@ function missing_argument_validation() {
 function set_shell_colors() {
     RED='\e[1;31m'
     GREEN='\e[1;32m'
+    GREEN_DARK='\e[0;32m'
     YELLOW='\e[1;33m'
+    BROWN='\e[0;33m'
     BLUE='\e[1;34m'
     BLUEG='\e[1;5;34m'
     PURPLE='\e[1;35m'
-    PURPLEG='\e[1;35m'
+    PURPLEG='\e[1;5;35m'
     CYAN='\e[1;36m'
-    BLK='\e[0m'
+    CYAN_DARK='\e[0;36m'
+    BLK='\e[0;0m'
+}
+
+function print_stacktrace() {
+    for ((i=1; i<${#BASH_SOURCE[@]}; i+=1))
+    do
+        printf "${YELLOW}${FUNCNAME[${i}]}${BROWN}...${GREEN}$(basename ${BASH_SOURCE[${i}]}):${CYAN}${BASH_LINENO[${i}]}${BLK}\n" >&2
+    done
 }
 
 function cout() {
@@ -79,6 +89,7 @@ function cout() {
     case ${color} in
         red|error)
             echo -e "${BLUE}[${RED}ERROR${BLUE}]${BLK} ${messsage}" >&2
+            print_stacktrace
             exit 1
         ;;
         fault)
@@ -148,6 +159,8 @@ function save_build_info() {
     cp -p ${FILEPATH}${FILENAME} ${TEMP_DIR}/${FILENAME}
     echo TMP_SOURCE_FILE=\"${TEMP_DIR}/${FILENAME}\" >> ${BUILD_INFO}
     echo ORIGINAL_SOURCE="\"$(realpath ${FILEPATH}${FILENAME})\"" >> ${BUILD_INFO}
+    local bin_name=$([ ${FILETYPE} == java ] && echo Main.class || echo run)
+    echo BINARY_PATH="\"${BUILD_DIR}/${bin_name}\"" >> ${BUILD_INFO}
     save_flags
 }
 

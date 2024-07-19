@@ -22,5 +22,10 @@ CCCOMPILER=gcc
 CC_FLAGS=-Wall -Wextra -g
 PYTHON_BIN=python3
 
+# Java configs
+JAVA_COMPILER=javac
+JAVA_EXEC=java
+JAVA_HOME=
+
 # For uva judge online submission timestamps
 UVA_TIMEZONE=Iceland

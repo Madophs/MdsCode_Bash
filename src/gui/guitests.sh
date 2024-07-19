@@ -38,6 +38,8 @@ function delete_test() {
 }
 
 function test_cases_setup_menu() {
+    missing_argument_validation 1 ${1}
+    local func_ref=${1}
     local src_folder_name=$(echo ${FILENAME} | sed 's/\./_/g')
     local testcase_choice=$(whiptail --title "Test cases" --menu -- "" 18 100 10 "${TEST_CASES_SET[@]}" 3>&1 1>&2 2>&3)
     if [[ $(exit_is_zero $?) == YES ]]
@@ -46,14 +48,14 @@ function test_cases_setup_menu() {
             "New test")
                 mdscode -a 1 "${FILENAME}"
                 load_test_cases ${src_folder_name}
-                test_cases_setup_menu
+                test_cases_setup_menu ${func_ref}
             ;;
             "Go back")
-                menu_cpp_setup
+                ${func_ref}
             ;;
             *)
                 delete_test ${src_folder_name} ${testcase_choice}
-                test_cases_setup_menu
+                test_cases_setup_menu ${func_ref}
             ;;
         esac
     else
