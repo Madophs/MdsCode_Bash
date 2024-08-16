@@ -70,7 +70,7 @@ function menu_cpp_configs() {
     "Flags " "${CPP_STANDARD}${CPP_FLAGS}" \
     "Template" "${TEMPLATE}" \
     "Add test cases" "${TEST_CASES_ARE_SET}" \
-    "Continue (create/open)" ""
+    "Continue (create/open)" "" \
     "Close" "" 3>&1 1>&2 2>&3)
 
     if [ -n "${choice_cpp_setup}" ]
@@ -88,12 +88,15 @@ function menu_cpp_configs() {
             "Add test cases")
                 test_cases_setup_menu ${FUNCNAME}
             ;;
-            "Continue")
+            "Continue (create/open)")
                 CREATION="Y"
                 if [[ ${TEST_CASES_ARE_SET} == YES ]]
                 then
                     SET_TEST_INDEX=0
                 fi
+            ;;
+            *)
+                exit 0
             ;;
         esac
     else

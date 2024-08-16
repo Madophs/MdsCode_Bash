@@ -12,7 +12,7 @@ function uva_get_hidden_params() {
 }
 
 function uva_already_logged() {
-    curl -X GET --cookie ${UVA_COOKIES_FILE} -f -s -L --compressed ${UVA_INDEX_URL} | grep -i register &> /dev/null
+    curl -X GET --cookie ${UVA_COOKIES_FILE} -f -s -L --compressed ${UVA_INDEX_URL} | grep -i -E 'register|unavailable' &> /dev/null
     exit_is_not_zero $?
 }
 
