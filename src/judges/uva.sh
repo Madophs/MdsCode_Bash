@@ -3,7 +3,7 @@
 UVA_BASE_URL="https://onlinejudge.org"
 UVA_INDEX_URL=${UVA_BASE_URL}/index.php
 UVA_LOGIN_URL="${UVA_INDEX_URL}?option=com_comprofiler&task=login"
-UVA_COOKIES_FILE=${BUILD_DIR}/uva_cookies
+UVA_COOKIES_FILE=${COOKIES_DIR}/uva_cookies
 UVA_SUBMIT_URL="${UVA_INDEX_URL}?option=com_onlinejudge&Itemid=25&page=save_submission"
 UVA_SUBMISSIONS_URL="https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=9"
 

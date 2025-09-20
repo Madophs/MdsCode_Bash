@@ -15,6 +15,7 @@ LOCAL_DATA_DIR="${HOME}/.local/share/mdscode"
 IO_DIR=${LOCAL_DATA_DIR}/io
 TEST_DIR=${LOCAL_DATA_DIR}/tests
 BUILD_DIR=${LOCAL_DATA_DIR}/build
+COOKIES_DIR=${LOCAL_DATA_DIR}/cookies
 BUILD_INFO=${BUILD_DIR}/last.txt
 FLAGS_DIR=${BUILD_DIR}/flags
 MDS_INPUT=${IO_DIR}/input
@@ -32,6 +33,7 @@ function create_common_files() {
     mkdir -p ${IO_DIR}
     mkdir -p ${TEST_DIR}
     mkdir -p ${FLAGS_DIR}
+    mkdir -p ${COOKIES_DIR}
     touch ${MDS_INPUT} ${MDS_OUTPUT}
 }
 
@@ -167,6 +169,8 @@ function save_build_info() {
 function open_with_editor() {
     if [[ ${CONFIGS_MAP['OPEN_WITH_EDITOR']} == YES ]]
     then
+        # Useful env variable to customize your editor
+        export COMPETITIVE_MODE=Y
         local path_to_file=${1}
         local editor_cmd="${CONFIGS_MAP['EDITOR_COMMAND']}"
         editor_cmd=$(echo "${editor_cmd}" | sed "s|{{FILE}}|${path_to_file}|g")
@@ -230,6 +234,7 @@ function is_cmd_option() {
         echo "NO"
     fi
 }
+
 function set_and_shift_cwsrc_file() {
     if [[ -n ${1} && $(is_cmd_option "${1}") == NO ]]
     then
@@ -312,11 +317,6 @@ function is_vim_the_father() {
     done
 }
 
-function is_script_getting_sourced() {
-    ps -o command $$ | tail -n 1 | grep -o -e "/bin/bash ${SCRIPT_DIR}/mdscode" &> /dev/null
-    exit_is_not_zero $?
-}
-
 function init_vars() {
     set_var ONLINE_JUDGE UVA # UVA Online Judge
 }
@@ -357,6 +357,7 @@ function display_help() {
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -g "--gui" "Run interactive mode with terminal GUI."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -s "--submit " "Submit last built file. (UVA Judge)"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--flags" "Edit current compile flags."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--clear-cookies" "Delete cookies"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -x "--debug" "Self explained"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -h "--help" "Show this"
     printf "\nDeveloped by Jehú Jair Ruiz Villegas\n"

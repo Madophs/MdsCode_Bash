@@ -55,6 +55,11 @@ function start_flow() {
         edit_nth_test
     fi
 
+    if [[ ${CLEAR_COOKIES_FLAG} == Y ]]
+    then
+        clear_cookies
+    fi
+
     if [[ ${SUBMIT} == Y ]]
     then
         submit_code

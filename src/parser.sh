@@ -123,6 +123,10 @@ function parse_args() {
                 OPEN_FLAGS="Y"
                 shift
                 ;;
+            --clear-cookies)
+                CLEAR_COOKIES_FLAG="Y"
+                shift
+                ;;
             -*|--*=)
                 cout error "Unknown option \"${1}\""
                 shift

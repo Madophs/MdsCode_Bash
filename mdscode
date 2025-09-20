@@ -8,11 +8,15 @@ else
     SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 fi
 
-SRC_DIR=${SCRIPT_DIR}/src
+declare -g SRC_DIR=${SCRIPT_DIR}/src
 source ${SRC_DIR}/main_flow.sh
 
-if [[ $(is_script_getting_sourced) == NO ]]
+# We can only return from a function or sourced script
+declare -g IS_SOURCED
+(return 0 2> /dev/null) && IS_SOURCED=YES || IS_SOURCED=NO
+
+if [[ ${IS_SOURCED} == NO ]]
 then
-    start $@
+    start "${@}"
 fi
 

@@ -21,8 +21,7 @@ function is_build_required() {
     echo "YES"
 }
 
-function show_status_compilation_message()
-{
+function show_status_compilation_message() {
     local exit_status=$1
     if [[ $(exit_is_zero ${exit_status}) == NO ]]
     then
