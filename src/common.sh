@@ -4,22 +4,20 @@ TIMEFORMAT="%Rs real %Us user %Ss sys"
 PS4='+($(basename ${BASH_SOURCE}):${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
 # App directories
-SRC_DIR=${SCRIPT_DIR}/src
-RES_DIR=${SCRIPT_DIR}/res
-CONFIG_DIR=${SCRIPT_DIR}/configs
-CXXINCLUDE_DIR=${RES_DIR}/include/
-TEMPLATES_DIR=${RES_DIR}/templates
+SRC_DIR="${SCRIPT_DIR}/src"
+RES_DIR="${SCRIPT_DIR}/res"
+CONFIG_DIR="${SCRIPT_DIR}/configs"
+CXXINCLUDE_DIR="${RES_DIR}/include/"
+TEMPLATES_DIR="${RES_DIR}/templates"
 
 # App data directories
 LOCAL_DATA_DIR="${HOME}/.local/share/mdscode"
-IO_DIR=${LOCAL_DATA_DIR}/io
-TEST_DIR=${LOCAL_DATA_DIR}/tests
-BUILD_DIR=${LOCAL_DATA_DIR}/build
-COOKIES_DIR=${LOCAL_DATA_DIR}/cookies
-BUILD_INFO=${BUILD_DIR}/last.txt
-FLAGS_DIR=${BUILD_DIR}/flags
-MDS_INPUT=${IO_DIR}/input
-MDS_OUTPUT=${IO_DIR}/output
+IO_DIR="${LOCAL_DATA_DIR}/io"
+TEST_DIR="${LOCAL_DATA_DIR}/tests"
+BUILD_DIR="${LOCAL_DATA_DIR}/build"
+COOKIES_DIR="${LOCAL_DATA_DIR}/cookies"
+MDS_INPUT="${IO_DIR}/input"
+MDS_OUTPUT="${IO_DIR}/output"
 TEMP_DIR="/tmp/mdscode"
 
 # Help menu columns width
@@ -27,14 +25,13 @@ WIDTH_1ST_OP=5
 WIDTH_2ND_OP=28
 
 function create_common_files() {
-    mkdir -p ${TEMP_DIR}
-    mkdir -p ${LOCAL_DATA_DIR}
-    mkdir -p ${BUILD_DIR}
-    mkdir -p ${IO_DIR}
-    mkdir -p ${TEST_DIR}
-    mkdir -p ${FLAGS_DIR}
-    mkdir -p ${COOKIES_DIR}
-    touch ${MDS_INPUT} ${MDS_OUTPUT}
+    mkdir -p "${TEMP_DIR}"
+    mkdir -p "${LOCAL_DATA_DIR}"
+    mkdir -p "${BUILD_DIR}"
+    mkdir -p "${IO_DIR}"
+    mkdir -p "${TEST_DIR}"
+    mkdir -p "${COOKIES_DIR}"
+    touch "${MDS_INPUT}" "${MDS_OUTPUT}"
 }
 
 function missing_argument_validation() {
@@ -142,28 +139,35 @@ function get_filetype_by_language() {
     esac
 }
 
-function save_flags() {
+function save_build_data() {
+    # File's data
+    local problem_build_dir="${BUILD_DIR}/${FILENAME}"
+    local build_data_file="${problem_build_dir}/data.sh"
+    mkdir -p "${problem_build_dir}"
+
+    echo FULLNAME=\"${FILENAME}\" >> "${build_data_file}"
+    echo LANG=\"${FILETYPE}\" >> "${build_data_file}"
+    echo FULLPATH="\"$(realpath ${FILEPATH}${FILENAME})\"" >> "${build_data_file}"
+    echo PROBLEM_ID="\"${PROBLEM_ID}\"" >> "${build_data_file}"
+    echo PROBLEM_URL="\"${PROBLEM_URL}\"" >> "${build_data_file}"
+    echo ONLINE_JUDGE="\"${ONLINE_JUDGE}\"" >> "${build_data_file}"
+
+    local bin_name=$([ ${FILETYPE} == java ] && echo Main.class || echo run)
+    echo BINARY_PATH="\"${BUILD_DIR}/${FILENAME}/${bin_name}\"" >> "${build_data_file}"
+
+    # File's compilation flags
+    local build_flags_file="${BUILD_DIR}/${FILENAME}/flags.sh"
     case ${FILETYPE} in
         cpp)
-            echo "export CXX_STANDARD=\"${CONFIGS_MAP['CXX_STANDARD']}\"" > ${FLAGS_DIR}/${FILENAME}.sh
-            echo "export CXXCOMPILER=\"${CONFIGS_MAP['CXXCOMPILER']}\"" >> ${FLAGS_DIR}/${FILENAME}.sh
-            echo "export CXX_FLAGS=\"${CONFIGS_MAP['CXX_FLAGS']}\"" >> ${FLAGS_DIR}/${FILENAME}.sh
+            echo "export CXX_STANDARD=\"${CONFIGS_MAP['CXX_STANDARD']}\"" > "${build_flags_file}"
+            echo "export CXXCOMPILER=\"${CONFIGS_MAP['CXXCOMPILER']}\"" >> "${build_flags_file}"
+            echo "export CXX_FLAGS=\"${CONFIGS_MAP['CXX_FLAGS']}\"" >> "${build_flags_file}"
             ;;
         c)
-            echo "export CCCOMPILER=\"${CONFIGS_MAP['CCCOMPILER']}\"" > ${FLAGS_DIR}/${FILENAME}.sh
-            echo "export CC_FLAGS=\"${CONFIGS_MAP['CC_FLAGS']}\"" >> ${FLAGS_DIR}/${FILENAME}.sh
+            echo "export CCCOMPILER=\"${CONFIGS_MAP['CCCOMPILER']}\"" > "${build_flags_file}"
+            echo "export CC_FLAGS=\"${CONFIGS_MAP['CC_FLAGS']}\"" >> "${build_flags_file}"
             ;;
     esac
-}
-
-function save_build_info() {
-    echo LANG=\"${FILETYPE}\" > ${BUILD_INFO}
-    cp -p ${FILEPATH}${FILENAME} ${TEMP_DIR}/${FILENAME}
-    echo TMP_SOURCE_FILE=\"${TEMP_DIR}/${FILENAME}\" >> ${BUILD_INFO}
-    echo ORIGINAL_SOURCE="\"$(realpath ${FILEPATH}${FILENAME})\"" >> ${BUILD_INFO}
-    local bin_name=$([ ${FILETYPE} == java ] && echo Main.class || echo run)
-    echo BINARY_PATH="\"${BUILD_DIR}/${bin_name}\"" >> ${BUILD_INFO}
-    save_flags
 }
 
 function open_with_editor() {
@@ -194,8 +198,8 @@ function delete_old_files() {
 }
 
 function open_flags() {
-    local last_built_file=$(get_last_source_file)
-    local path_to_file="${FLAGS_DIR}/${last_built_file}.sh"
+    load_build_data ${FILENAME}
+    local path_to_file="${BUILD_DIR}/${FILENAME}/flags.sh"
     if [[ -f ${path_to_file} ]]
     then
         open_with_editor ${path_to_file}
@@ -220,10 +224,14 @@ function separate_filepath_and_filename() {
     fi
 }
 
-function get_last_source_file() {
-    source ${BUILD_INFO} > /dev/null 2>&1
-    local file=$(echo ${ORIGINAL_SOURCE} | awk -F '/' '{print $NF}')
-    echo ${file}
+function load_build_data() {
+    local filename="${1}"
+    if [[ ! -f "${BUILD_DIR}/${filename}/flags.sh" || ! -f "${BUILD_DIR}/${filename}/data.sh" ]]
+    then
+        cout error "Build data is unavailable. Please, verify if filename is specified correctly."
+    fi
+    source "${BUILD_DIR}/${filename}/flags.sh" > /dev/null 2>&1
+    source "${BUILD_DIR}/${filename}/data.sh" > /dev/null 2>&1
 }
 
 function is_cmd_option() {
@@ -232,16 +240,6 @@ function is_cmd_option() {
         echo "YES"
     else
         echo "NO"
-    fi
-}
-
-function set_and_shift_cwsrc_file() {
-    if [[ -n ${1} && $(is_cmd_option "${1}") == NO ]]
-    then
-        echo "shift; CWSRC_FILE=${1}"
-    else
-        CWSRC_FILE=$(get_last_source_file)
-        echo "CWSRC_FILE=${CWSRC_FILE}"
     fi
 }
 
@@ -317,10 +315,6 @@ function is_vim_the_father() {
     done
 }
 
-function init_vars() {
-    set_var ONLINE_JUDGE UVA # UVA Online Judge
-}
-
 function enable_debug_if_specified() {
     local all_args=$@
     echo ${all_args} | grep -e '-x' > /dev/null 2>&1
@@ -334,8 +328,7 @@ function common_setup() {
     set_shell_colors
     create_common_files
     delete_old_files ${TEST_DIR}
-    delete_old_files ${FLAGS_DIR}
-    init_vars
+    delete_old_files ${BUILD_DIR}
 }
 
 function display_help() {
@@ -351,10 +344,11 @@ function display_help() {
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--exer" "Executes last compiled file without redirecting errors to output file."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -i "--io" "Choose the prefered IO type (I,O,IO). Default: IO"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -t "--test [default:0]" "Test last compiled source file."
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -a "--add-test [no tests] [file]" "Add a test case for the specified src file (if not specified, last src file compiled will be taken)."
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--set-test [nth test]" "Sets the input of the Nth test as input of \$MDS_INPUT."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -a "--add-test [no tests]" "Add a test case for the specified file (IMPORTANT: filename must be specified)."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--set-test [nth test]" "Sets the input of the Nth test as input of \$MDS_INPUT. (IMPORTANT: filename must be specified)"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--edit-test [nth test]" "Edit the nth test."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -g "--gui" "Run interactive mode with terminal GUI."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -u "--problem-url" "Create file based on provided url."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -s "--submit " "Submit last built file. (UVA Judge)"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--flags" "Edit current compile flags."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--clear-cookies" "Delete cookies"

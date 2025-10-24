@@ -3,19 +3,13 @@
 ALLOWED_BUILD_FILETYPES=("cpp" "py" "c" "java")
 
 function is_build_required() {
-    if [[ ${ALWAYS_BUILD} != Y && -f ${BUILD_INFO} ]]
+    if [[ ${ALWAYS_BUILD} != Y ]]
     then
-        source ${BUILD_INFO} # Last TMP_SOURCE_FILE built
-        TMP_SOURCE_FILE=$(echo ${TMP_SOURCE_FILE} | awk -F '/' '{print $NF}')
-        local current_file=$(echo "${FILEPATH}${FILENAME}" | awk -F '/' '{print $NF}')
-        if [[ "${current_file}" == "${TMP_SOURCE_FILE}" ]]
+        local file_last_time_written=$(ls -l --time-style full-iso "${FULLPATH}" | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
+        local bin_last_time_written=$(ls -l --time-style full-iso "${BINARY_PATH}" | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
+        if [[ ${file_last_time_written} < ${bin_last_time_written} ]]
         then
-            local file_last_time_written=$(ls -l --time-style full-iso "${FILEPATH}${FILENAME}" | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
-            local bin_last_time_written=$(ls -l --time-style full-iso ${BINARY_PATH} | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
-            if [[ ${file_last_time_written} < ${bin_last_time_written} ]]
-            then
-                echo "NO"
-            fi
+            echo "NO"
         fi
     fi
     echo "YES"
@@ -31,24 +25,24 @@ function show_status_compilation_message() {
     fi
 }
 
-function build_file() {
+function compile() {
     cout info "Compiling ${FILENAME}"
     case ${FILETYPE} in
         cpp)
             ${CONFIGS_MAP['CXXCOMPILER']} ${CONFIGS_MAP['CXX_STANDARD']} \
-                ${CONFIGS_MAP['CXX_FLAGS']} -I${CXXINCLUDE_DIR} ${FILEPATH}${FILENAME} -o ${BUILD_DIR}/run
+                ${CONFIGS_MAP['CXX_FLAGS']} -I${CXXINCLUDE_DIR} "${FULLPATH}" -o "${BINARY_PATH}"
             show_status_compilation_message $?
             ;;
         c)
-            ${CONFIGS_MAP['CCCOMPILER']} ${CC_FLAGS} ${FILEPATH}${FILENAME} -o ${BUILD_DIR}/run
+            ${CONFIGS_MAP['CCCOMPILER']} ${CC_FLAGS} "${FULLPATH}" -o "${BINARY_PATH}"
             show_status_compilation_message $?
             ;;
         py)
             # python is an intepreted language, therefore we only copy the file to build directory
-            cp -f ${FILEPATH}${FILENAME} ${BUILD_DIR}/run
+            cp -f "${FULLPATH}" "${BINARY_PATH}"
             ;;
         java)
-            ${CONFIGS_MAP['JAVA_COMPILER']} ${FILEPATH}${FILENAME} -d ${BUILD_DIR}
+            ${CONFIGS_MAP['JAVA_COMPILER']} "${FULLPATH}" -d "${BUILD_DIR}/${FILENAME}"
             show_status_compilation_message $?
             ;;
     esac
@@ -64,23 +58,14 @@ function is_allowed_build_filetype() {
     fi
 }
 
-function update_flags() {
-    local last_file_built=$(get_last_source_file)
-    if [[ ${last_file_built} != ${FILENAME} ]]
-    then
-        read_custom_configs ${FILENAME}
-    fi
-}
-
 function build() {
-    update_flags
+    load_build_data ${FILENAME}
     FILETYPE=$(get_file_extension "${FILENAME}")
     if [[ $(is_allowed_build_filetype ${FILETYPE}) == YES ]]
     then
         if [[ $(is_build_required) = YES ]]
         then
-            build_file
-            save_build_info
+            compile
         else
             cout warning "Skipping build, using previous executable."
         fi
@@ -117,30 +102,31 @@ function io_presetup() {
 }
 
 function execute() {
-    if [[ ! -f ${BUILD_INFO} ]]
+    load_build_data ${FILENAME}
+
+    if [[ ! -f "${BINARY_PATH}" ]]
     then
         cout error "File hasn't been compiled."
     fi
 
     io_presetup ${1}
-    source ${BUILD_INFO}
 
     case ${LANG} in
         cpp)
-            eval time ${BUILD_DIR}/run ${IO_ARGS}
+            eval time ${BINARY_PATH} ${IO_ARGS}
             ;;
         c)
-            eval time ${BUILD_DIR}/run ${IO_ARGS}
+            eval time ${BINARY_PATH} ${IO_ARGS}
             ;;
         py)
-            eval time ${CONFIGS_MAP['PYTHON_BIN']} ${BUILD_DIR}/run ${IO_ARGS}
+            eval time ${CONFIGS_MAP['PYTHON_BIN']} ${BINARY_PATH} ${IO_ARGS}
             ;;
         java)
-            cd ${BUILD_DIR}
+            cd "${BUILD_DIR}/${FILENAME}"
             eval time ${CONFIGS_MAP['JAVA_EXEC']} Main ${IO_ARGS}
             ;;
         *)
-            cout error "No last build info found."
+            cout error "Unsupported language <${LANG}>."
             ;;
     esac
 }

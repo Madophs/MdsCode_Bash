@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ${SRC_DIR}/args_flags.sh
+source "${SRC_DIR}/args_flags.sh"
 
 function parse_args() {
     if [[ $# == 0 ]]
@@ -79,14 +79,12 @@ function parse_args() {
                 param_validation ${1} ${2}
                 NO_TEST=${2}
                 CREATE_TESTS="Y"
-                eval $(set_and_shift_cwsrc_file ${3})
                 shift
                 shift
                 ;;
             --set-test)
                 param_validation ${1} ${2}
                 SET_TEST_INDEX=${2}
-                eval $(set_and_shift_cwsrc_file ${3})
                 shift
                 shift
                 ;;
@@ -104,6 +102,12 @@ function parse_args() {
                 ;;
             -g|--gui)
                 GUI="Y"
+                shift
+                ;;
+            -u|--problem-url)
+                param_validation ${1} ${2}
+                PROBLEM_URL=${2}
+                shift
                 shift
                 ;;
             -s|--submit)

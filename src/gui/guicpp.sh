@@ -65,7 +65,7 @@ function menu_cpp_flags() {
 }
 
 function menu_cpp_configs() {
-    local choice_cpp_setup=$(whiptail --title "C++ Setup" --menu -- "" 18 200 10 \
+    local choice_cpp_setup=$(whiptail --title "C++ Setup for \"${FILENAME}\"" --menu -- "" 18 200 10 \
     "C++ Standard " "${CPP_STANDARD}" \
     "Flags " "${CPP_STANDARD}${CPP_FLAGS}" \
     "Template" "${TEMPLATE}" \

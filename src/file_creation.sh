@@ -11,6 +11,15 @@ function apply_naming_convention() {
         return 0
     fi
 
+    if [[ ${CONFIGS_MAP['PROBLEM_ID_AT_END']} == YES  && -z "${PROBLEM_ID}" ]]
+    then
+        PROBLEM_ID=$(echo ${filename} | grep -o -e '^[0-9]\+')
+        if [[ -n ${PROBLEM_ID} ]]
+        then
+            filename=$(echo ${filename} | sed "s/^${PROBLEM_ID}//g")
+        fi
+    fi
+
     filename=$(echo ${filename} | sed "s/\.${file_extension}//g")
 
     # trim leading/trailing whitespaces
@@ -23,29 +32,25 @@ function apply_naming_convention() {
     filename=$(sed 's/á/a/g;s/é/e/g;s/í/i/g;s/ó/o/g;s/ú/u/g;s/ü/u/g;s/ñ/n/g' <(echo $filename))
     filename=$(sed 's/Á/A/g;s/É/E/g;s/Í/I/g;s/Ó/O/g;s/Ú/U/g;s/Ü/U/g;s/Ñ/N/g' <(echo $filename))
 
-    if [[ ${CONFIGS_MAP['PROBLEM_ID_AT_END']} == YES ]]
-    then
-        local problem_id=$(echo ${filename} | grep -o -e '^[0-9]\+')
-        if [[ -n ${problem_id} ]]
-        then
-            filename=$(echo ${filename} | sed "s/^${problem_id}//g;s/^ *//g;s/\(.*\)/\1 ${problem_id}/g")
-        fi
-    fi
-
     case ${CONFIGS_MAP['CASETYPE']} in
         UCWORDS)
-            filename=$(echo ${filename} | sed -e 's/\b\(.\)/\u\1/g')
+            filename="$(echo ${filename} | sed -e 's/\b\(.\)/\u\1/g')"
         ;;
         UPPERCASE)
-            filename=$(echo ${filename} | tr '[:lower:]' '[:upper:]')
+            filename="$(echo ${filename} | tr '[:lower:]' '[:upper:]')"
         ;;
         LOWERCASE)
-            filename=$(echo ${filename} | tr '[:upper:]' '[:lower:]')
+            filename="$(echo ${filename} | tr '[:upper:]' '[:lower:]')"
         ;;
         *)
             cout warning "Ignoring unknown casetype ${CONFIGS_MAP['CASETYPE']}"
         ;;
     esac
+
+    if [[ -n "${PROBLEM_ID}" ]]
+    then
+        filename="${filename} ${PROBLEM_ID}"
+    fi
 
     filename=$(sed "s/ /${CONFIGS_MAP['WHITESPACE_REPLACE']}/g;s/-/${CONFIGS_MAP['WHITESPACE_REPLACE']}/g" <(echo ${filename}))
     filename="${filename}.${file_extension}"
@@ -85,6 +90,11 @@ function load_template() {
 }
 
 function create_file() {
+    if [[ -n "${PROBLEM_URL}" ]]
+    then
+        set_problem_data_by_url
+    fi
+
     if [[ -z ${FILETYPE} ]]
     then
         FILETYPE=$(get_file_extension "${FILENAME}")
@@ -94,11 +104,6 @@ function create_file() {
             FILETYPE=${CONFIGS_MAP['DEFAULT_FILETYPE']}
         fi
     fi
-
-    # Create the file in a tmp location
-    local tmp_filename="main_$(date +'%s').${FILETYPE}"
-    local tmp_file="${TEMP_DIR}/${tmp_filename}"
-    touch ${tmp_file}
 
     if [[ -n ${FILENAME} ]]
     then
@@ -117,18 +122,16 @@ function create_file() {
                 cout warning "Replacing file."
                 cat ${tmp_file} > ${file_fullpath}
                 cout success "File \"${FILENAME}\" replaced successfully."
+                save_build_data
             else
                 cout info "Wise choice, bye..."
             fi
-            save_build_info
         else
             cat ${tmp_file} > ${file_fullpath}
-            save_build_info
+            save_build_data
             cout success "File \"${FILENAME}\" created successfully."
         fi
     else
-        load_template ${tmp_file} ${FILETYPE}
-        cout warning "Filename not specified, file generated with a random name \"${tmp_filename}\""
-        cp ${tmp_file} .
+        cout error "Filename not specified."
     fi
 }

@@ -1,13 +1,13 @@
 #!/bin/bash
 
-source ${SRC_DIR}/common.sh
-source ${SRC_DIR}/configs.sh
-source ${SRC_DIR}/parser.sh
-source ${SRC_DIR}/file_creation.sh
-source ${SRC_DIR}/testing.sh
-source ${SRC_DIR}/compile_and_exec.sh
-source ${SRC_DIR}/guimode.sh
-source ${SRC_DIR}/submit.sh
+source "${SRC_DIR}/common.sh"
+source "${SRC_DIR}/configs.sh"
+source "${SRC_DIR}/parser.sh"
+source "${SRC_DIR}/file_creation.sh"
+source "${SRC_DIR}/testing.sh"
+source "${SRC_DIR}/compile_and_exec.sh"
+source "${SRC_DIR}/guimode.sh"
+source "${SRC_DIR}/online_judge.sh"
 
 function start_flow() {
     if [[ ${GUI} == Y ]]
@@ -15,7 +15,7 @@ function start_flow() {
         start_gui
     fi
 
-    if [[ ${CREATION} == Y ]]
+    if [[ ${CREATION} == Y || -n "${PROBLEM_URL}" ]]
     then
         create_file
     fi
