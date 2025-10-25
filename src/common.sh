@@ -145,7 +145,7 @@ function save_build_data() {
     local build_data_file="${problem_build_dir}/data.sh"
     mkdir -p "${problem_build_dir}"
 
-    echo FULLNAME=\"${FILENAME}\" >> "${build_data_file}"
+    echo FULLNAME=\"${FILENAME}\" > "${build_data_file}"
     echo LANG=\"${FILETYPE}\" >> "${build_data_file}"
     echo FULLPATH="\"$(realpath ${FILEPATH}${FILENAME})\"" >> "${build_data_file}"
     echo PROBLEM_ID="\"${PROBLEM_ID}\"" >> "${build_data_file}"
