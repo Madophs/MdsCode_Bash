@@ -198,7 +198,6 @@ function delete_old_files() {
 }
 
 function open_flags() {
-    load_build_data ${FILENAME}
     local path_to_file="${BUILD_DIR}/${FILENAME}/flags.sh"
     if [[ -f ${path_to_file} ]]
     then
@@ -225,13 +224,12 @@ function separate_filepath_and_filename() {
 }
 
 function load_build_data() {
-    local filename="${1}"
-    if [[ ! -f "${BUILD_DIR}/${filename}/flags.sh" || ! -f "${BUILD_DIR}/${filename}/data.sh" ]]
+    if [[ ! -f "${BUILD_DIR}/${FILENAME}/flags.sh" || ! -f "${BUILD_DIR}/${FILENAME}/data.sh" ]]
     then
         cout error "Build data is unavailable. Please, verify if filename is specified correctly."
     fi
-    source "${BUILD_DIR}/${filename}/flags.sh" > /dev/null 2>&1
-    source "${BUILD_DIR}/${filename}/data.sh" > /dev/null 2>&1
+    source "${BUILD_DIR}/${FILENAME}/flags.sh" > /dev/null 2>&1
+    source "${BUILD_DIR}/${FILENAME}/data.sh" > /dev/null 2>&1
 }
 
 function is_cmd_option() {

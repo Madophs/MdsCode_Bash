@@ -6,7 +6,6 @@ UVA_LOGIN_URL="${UVA_INDEX_URL}?option=com_comprofiler&task=login"
 UVA_COOKIES_FILE=${COOKIES_DIR}/uva_cookies
 UVA_SUBMIT_URL="${UVA_INDEX_URL}?option=com_onlinejudge&Itemid=25&page=save_submission"
 UVA_SUBMISSIONS_URL="https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=9"
-UVA_PROBLEM_ORIGIN_URL="https://vjudge.net/problem/UVA-{{}}/origin"
 
 function uva_parse_problem_data() {
     missing_argument_validation 2 ${1} ${2}
@@ -22,6 +21,57 @@ function uva_parse_problem_data() {
         problem_id=$(echo "${raw_name}" | grep -o -e '^[0-9]\+')
         filename=$(echo "${raw_name}" | sed 's/^[0-9]\+ - //g')
     fi
+}
+
+function uva_parse_sample_tests() {
+    declare -n sample_input_ref=${1}
+    declare -n sample_output_ref=${2}
+    local file_content=$(cat "${TEMP_DIR}/${PROBLEM_ID}.txt")
+
+    local new_page_index=$(echo -e "${file_content}" | grep -n -e 'Universidad de Valladolid OJ' | grep -o -e '^[0-9]\+')
+    if [[ -n "${new_page_index}" ]]
+    then
+        local file_content=$(echo "${file_content}" | sed "${new_page_index},$(( new_page_index + 2 ))d")
+    fi
+
+    local -a num_lines=( $(echo "${file_content}" | grep -n -e 'Sample \(Input\|Output\)' | grep -o -e '^[0-9]\+') )
+    local -i lines_count=$(echo "${file_content}" | wc -l | grep -o -e '^[0-9]\+')
+    local -i input_start=$(( lines_count - num_lines[0] ))
+    local -i gap_btw_in_out=$(( num_lines[1] - num_lines[0] - 2 ))
+    local -i output_start=$(( lines_count - num_lines[1] ))
+
+    sample_input_ref=$(echo -e "${file_content}" | tail -n ${input_start} | head -n ${gap_btw_in_out})
+    sample_output_ref=$(echo -e "${file_content}" | tail -n ${output_start})
+}
+
+function uva_download_problem_pdf() {
+    if [[ -f "${TEMP_DIR}/${PROBLEM_ID}.pdf" ]]
+    then
+        return
+    fi
+
+    local is_uva_pdf_url=$(echo "${PROBLEM_URL}" | grep -e '^https:.\+\.pdf$')
+    if [[ -n "${is_uva_pdf_url}" ]]
+    then
+        local pdf_link="${PROBLEM_URL}"
+    else
+        local pdf_href=$(curl -L -s "${PROBLEM_URL}" | grep -o -e '\"external/.\+pdf"' | sed 's|"||g')
+        local pdf_link="${UVA_BASE_URL}/${pdf_href}"
+    fi
+
+    wget "${pdf_link}" -P "${TEMP_DIR}"
+}
+
+function uva_set_sample_test() {
+    uva_download_problem_pdf
+    pdftotext -layout -nopgbrk "${TEMP_DIR}/${PROBLEM_ID}.pdf" "${TEMP_DIR}/${PROBLEM_ID}.txt"
+
+    local test_src_folder=${TEST_DIR}/${FULLNAME}
+    mkdir -p "${test_src_folder}"
+
+    uva_parse_sample_tests sample_input sample_output
+    echo -e "${sample_input}" > "${test_src_folder}/test_input_0.txt"
+    echo -e "${sample_output}" > "${test_src_folder}/test_output_0.txt"
 }
 
 function uva_get_hidden_params() {
@@ -162,8 +212,6 @@ function set_upload_date()
 }
 
 function uva_submit() {
-    load_build_data ${FILENAME}
-
     is_uva_available
     uva_try_login
 

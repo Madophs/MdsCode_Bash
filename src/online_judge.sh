@@ -20,6 +20,17 @@ function set_problem_data_by_url() {
     esac
 }
 
+function set_test_cases_from_online_judge_url() {
+    case "${ONLINE_JUDGE}" in
+        "onlinejudge.org")
+            uva_set_sample_test
+            ;;
+        *)
+            cout warning "Autoset sample tests for <${ONLINE_JUDGE}> are not implemented yet."
+            ;;
+    esac
+}
+
 function clear_cookies() {
     rm -f "${UVA_COOKIES_FILE}"
     rm -f "${AER_COOKIES_FILE}"

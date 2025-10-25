@@ -25,8 +25,6 @@ function create_test() {
         cout error "Invalid value [${NO_TEST}]"
     fi
 
-    load_build_data ${FILENAME}
-
     local test_src_folder_name=${FULLNAME}
     local test_src_folder=${TEST_DIR}/${test_src_folder_name}
 
@@ -52,7 +50,6 @@ function create_test() {
 }
 
 function set_nth_test_as_input() {
-    load_build_data ${FILENAME}
     local test_src_folder_name=${FULLNAME}
     local test_src_folder=${TEST_DIR}/${test_src_folder_name}
     local target_test=${test_src_folder}/test_input_${SET_TEST_INDEX}.txt
@@ -65,7 +62,6 @@ function set_nth_test_as_input() {
 }
 
 function edit_nth_test() {
-    load_build_data ${FILENAME}
     local test_src_folder_name=${FULLNAME}
     local test_src_folder=${TEST_DIR}/${test_src_folder_name}
     local target_input_test=${test_src_folder}/test_input_${EDIT_TEST_INDEX}.txt
@@ -80,7 +76,6 @@ function edit_nth_test() {
 }
 
 function testing() {
-    load_build_data ${FILENAME}
     local test_src_folder_name=${FULLNAME}
     local test_src_folder=${TEST_DIR}/${test_src_folder_name}
     local no_test=$(( $(ls -l ${test_src_folder}/test*txt 2> /dev/null | wc -l) / 2 ))

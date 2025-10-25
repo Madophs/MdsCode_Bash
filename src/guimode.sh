@@ -1,42 +1,18 @@
 #!/bin/bash
 
-source ${SRC_DIR}/gui/guiutils.sh
-source ${SRC_DIR}/gui/guitests.sh
-source ${SRC_DIR}/gui/guicpp.sh
-source ${SRC_DIR}/gui/guijava.sh
+source "${SRC_DIR}/gui/guiutils.sh"
+source "${SRC_DIR}/gui/guitests.sh"
+source "${SRC_DIR}/gui/guicpp.sh"
+source "${SRC_DIR}/gui/guijava.sh"
 
 AVAILABLE_LANGUAGES=("C++" "" "C Language" "" "Java" "" "Python" "" "Rust" "")
 
-# https://askubuntu.com/questions/776831/whiptail-change-background-color-dynamically-from-magenta
-function set_newt_colors() {
-    if [[ $(is_vim_the_father) == YES ]]
-    then
-        export NEWT_COLORS='
-            root=black,black
-            window=lightgray,lightgray
-            border=white,black
-            entry=white,black
-            textbox=white,black
-            button=black,red
-            title=white,black
-            checkbox=white,black
-            actsellistbox=white,black
-        '
-    else
-        export NEWT_COLORS='
-            root=black,black
-            window=lightgray,lightgray
-            border=white,gray
-            entry=white,gray
-            textbox=white,gray
-            button=black,red
-            title=white,gray
-            checkbox=white,gray
-        '
-    fi
-}
-
 function input_filename() {
+    if [[ -n "${PROBLEM_URL}" ]]
+    then
+        set_problem_data_by_url
+    fi
+
     if [[ -z ${FILENAME} ]]
     then
         FILENAME=$(whiptail --inputbox "Filename:" 10 100 "${FILENAME}" 3>&1 1>&2 2>&3)
@@ -81,13 +57,6 @@ function file_creation_wizard() {
 function start_wizard() {
     file_creation_wizard
     show_menu_language_configs
-}
-
-function exit_if_whiptail_not_installed() {
-    if [[ ! -x $(which whiptail) ]]
-    then
-        cout error "Please install whiptail package to use gui mode"
-    fi
 }
 
 function start_gui() {

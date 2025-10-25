@@ -10,14 +10,26 @@ source "${SRC_DIR}/guimode.sh"
 source "${SRC_DIR}/online_judge.sh"
 
 function start_flow() {
+    if [[ ${CLEAR_COOKIES_FLAG} == Y ]]
+    then
+        clear_cookies
+    fi
+
     if [[ ${GUI} == Y ]]
     then
         start_gui
     fi
 
-    if [[ ${CREATION} == Y || -n "${PROBLEM_URL}" ]]
+    if [[ ${CREATION} == Y ]]
     then
         create_file
+    fi
+
+    load_build_data
+
+    if [[ -n "${PROBLEM_URL}" ]]
+    then
+        set_test_cases_from_online_judge_url
     fi
 
     if [[ ${CREATE_TESTS} == Y ]]
@@ -55,11 +67,6 @@ function start_flow() {
         edit_nth_test
     fi
 
-    if [[ ${CLEAR_COOKIES_FLAG} == Y ]]
-    then
-        clear_cookies
-    fi
-
     if [[ ${SUBMIT} == Y ]]
     then
         submit_code
@@ -69,7 +76,6 @@ function start_flow() {
     then
         open_with_editor "${FILEPATH}${FILENAME}"
     fi
-
 }
 
 function start() {

@@ -1,5 +1,12 @@
 #!/bin/bash
 
+function exit_if_whiptail_not_installed() {
+    if [[ ! -x $(which whiptail) ]]
+    then
+        cout error "Please install whiptail package to use gui mode"
+    fi
+}
+
 function preload_templates() {
     missing_argument_validation 1 ${1}
     declare -n template_list=${1}
@@ -24,5 +31,34 @@ function menu_templates() {
         ${func_ref}
     else
         exit 1
+    fi
+}
+
+# https://askubuntu.com/questions/776831/whiptail-change-background-color-dynamically-from-magenta
+function set_newt_colors() {
+    if [[ $(is_vim_the_father) == YES ]]
+    then
+        export NEWT_COLORS='
+            root=black,black
+            window=lightgray,lightgray
+            border=white,black
+            entry=white,black
+            textbox=white,black
+            button=black,red
+            title=white,black
+            checkbox=white,black
+            actsellistbox=white,black
+        '
+    else
+        export NEWT_COLORS='
+            root=black,black
+            window=lightgray,lightgray
+            border=white,gray
+            entry=white,gray
+            textbox=white,gray
+            button=black,red
+            title=white,gray
+            checkbox=white,gray
+        '
     fi
 }

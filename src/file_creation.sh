@@ -67,24 +67,23 @@ function set_default_template() {
 }
 
 function load_template() {
-    local file=${1}
+    declare -n template_content_ref=${1}
     local file_type=${2}
     if [[ -z ${TEMPLATE} ]]
     then
         if [[ -f "${TEMPLATES_DIR}/default.${file_type}" ]]
         then
-            cat ${TEMPLATES_DIR}/default.${file_type} > ${file}
+            template_content_ref=$(cat "${TEMPLATES_DIR}/default.${file_type}")
         else
             cout warning "Default ${file_type} template not found."
-            cout info "Creating a simple empty file."
         fi
     else
         if [[ -f ${TEMPLATES_DIR}/${TEMPLATE} ]]
         then
-            cat ${TEMPLATES_DIR}/${TEMPLATE} > ${file}
+            template_content_ref=$(cat "${TEMPLATES_DIR}/${TEMPLATE}")
         elif [[ ${TEMPLATE} != none ]]
         then
-            cout warning "Template ${TEMPLATE} not found, creating an empty file."
+            cout warning "Template ${TEMPLATE} not found."
         fi
     fi
 }
@@ -108,7 +107,7 @@ function create_file() {
     if [[ -n ${FILENAME} ]]
     then
         apply_naming_convention FILENAME ${FILETYPE}
-        load_template ${tmp_file} ${FILETYPE}
+        load_template template_content ${FILETYPE}
 
         local file_fullpath="${FILEPATH}${FILENAME}"
         if [[ -f ${file_fullpath} ]]
@@ -120,14 +119,14 @@ function create_file() {
             if [[ ${input} == y  || ${input} == Y ]]
             then
                 cout warning "Replacing file."
-                cat ${tmp_file} > ${file_fullpath}
+                echo -e "${template_content}" > "${file_fullpath}"
                 cout success "File \"${FILENAME}\" replaced successfully."
                 save_build_data
             else
                 cout info "Wise choice, bye..."
             fi
         else
-            cat ${tmp_file} > ${file_fullpath}
+            echo -e "${template_content}" > "${file_fullpath}"
             save_build_data
             cout success "File \"${FILENAME}\" created successfully."
         fi

@@ -5,8 +5,8 @@ ALLOWED_BUILD_FILETYPES=("cpp" "py" "c" "java")
 function is_build_required() {
     if [[ ${ALWAYS_BUILD} != Y ]]
     then
-        local file_last_time_written=$(ls -l --time-style full-iso "${FULLPATH}" | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
-        local bin_last_time_written=$(ls -l --time-style full-iso "${BINARY_PATH}" | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
+        local file_last_time_written=$(ls -l --time-style full-iso "${FULLPATH}" 2> /dev/null | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
+        local bin_last_time_written=$(ls -l --time-style full-iso "${BINARY_PATH}" 2> /dev/null | grep -e '[0-9]*-[0-9]*-[0-9]* [0-9]*:[0-9]*:[0-9]*' -o)
         if [[ ${file_last_time_written} < ${bin_last_time_written} ]]
         then
             echo "NO"
@@ -59,7 +59,6 @@ function is_allowed_build_filetype() {
 }
 
 function build() {
-    load_build_data ${FILENAME}
     FILETYPE=$(get_file_extension "${FILENAME}")
     if [[ $(is_allowed_build_filetype ${FILETYPE}) == YES ]]
     then
@@ -102,8 +101,6 @@ function io_presetup() {
 }
 
 function execute() {
-    load_build_data ${FILENAME}
-
     if [[ ! -f "${BINARY_PATH}" ]]
     then
         cout error "File hasn't been compiled."
