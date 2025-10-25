@@ -65,8 +65,6 @@ function build() {
         if [[ $(is_build_required) = YES ]]
         then
             compile
-        else
-            cout warning "Skipping build, using previous executable."
         fi
     else
         cout error "Failed to build. Filetype not allowed."

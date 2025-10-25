@@ -27,7 +27,7 @@ function start_flow() {
 
     load_build_data
 
-    if [[ -n "${PROBLEM_URL}" ]]
+    if [[ -n "${PROBLEM_URL}" && ${CREATION} == Y ]]
     then
         set_test_cases_from_online_judge_url
     fi

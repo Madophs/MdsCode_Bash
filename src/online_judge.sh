@@ -25,6 +25,9 @@ function set_test_cases_from_online_judge_url() {
         "onlinejudge.org")
             uva_set_sample_test
             ;;
+        "aceptaelreto.com")
+            aer_set_sample_test
+            ;;
         *)
             cout warning "Autoset sample tests for <${ONLINE_JUDGE}> are not implemented yet."
             ;;

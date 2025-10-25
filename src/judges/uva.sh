@@ -72,6 +72,8 @@ function uva_set_sample_test() {
     uva_parse_sample_tests sample_input sample_output
     echo -e "${sample_input}" > "${test_src_folder}/test_input_0.txt"
     echo -e "${sample_output}" > "${test_src_folder}/test_output_0.txt"
+
+    SET_TEST_INDEX=0
 }
 
 function uva_get_hidden_params() {
@@ -164,7 +166,7 @@ function uva_verdict() {
         fi
 
         local latest_entry=$(curl -X GET --cookie ${UVA_COOKIES_FILE} -f -s -L --compressed ${UVA_SUBMISSIONS_URL} | grep '<tr class="sectiontableentry' -A 8 -m 1)
-        local datetime_submission=$(date +%s -d $(echo ${latest_entry} | grep -o -e '[0-9]\+-[0-9]\+-[0-9]\+ [0-9]\+:[0-9]\+:[0-9]\+'))
+        local datetime_submission=$(date +%s -d "$(echo ${latest_entry} | grep -o -e '[0-9]\+-[0-9]\+-[0-9]\+ [0-9]\+:[0-9]\+:[0-9]\+')")
         if [[ ${datetime_submission} < ${datetime_before_submission} ]]
         then
             error_type=3

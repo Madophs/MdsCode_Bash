@@ -109,11 +109,6 @@ function cout() {
     esac
 }
 
-function get_test_folder_name() {
-    missing_argument_validation 1 ${1}
-    echo $(echo ${1} | sed 's/\./_/g')
-}
-
 function get_filetype_by_language() {
     missing_argument_validation 1 $1
     local language=${1}
@@ -224,7 +219,8 @@ function separate_filepath_and_filename() {
 }
 
 function load_build_data() {
-    if [[ ! -f "${BUILD_DIR}/${FILENAME}/flags.sh" || ! -f "${BUILD_DIR}/${FILENAME}/data.sh" ]]
+    local ignore_failure=${1:-NO}
+    if [[ "${ignore_failure}" == NO && (! -f "${BUILD_DIR}/${FILENAME}/flags.sh" || ! -f "${BUILD_DIR}/${FILENAME}/data.sh") ]]
     then
         cout error "Build data is unavailable. Please, verify if filename is specified correctly."
     fi

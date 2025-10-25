@@ -105,10 +105,12 @@ function menu_cpp_configs() {
 }
 
 function menu_cpp_setup() {
+    load_build_data YES
+    read_custom_configs
     set_global_cpp_variables
     preload_cpp_flags
     preload_templates MENU_CPP_TEMPLATES
-    load_test_cases $(get_test_folder_name ${FILENAME})
+    load_test_cases
     set_default_template ${FILETYPE}
     menu_cpp_configs
 }

@@ -4,10 +4,8 @@ TEST_CASES_SET=("New test" "" "Go back" "")
 TEST_CASES_ARE_SET="NO"
 
 function load_test_cases() {
-    missing_argument_validation 1 ${1}
     TEST_CASES_ARE_SET="NO"
-    local tests_folder=${1}
-    local test_src_folder=${TEST_DIR}/${tests_folder}
+    local test_src_folder=${TEST_DIR}/${FILENAME}
     if [[ ! -d ${test_src_folder} ]]
     then
         return

@@ -47,33 +47,29 @@ __mds_cmd_contains() {
 }
 
 __mds_get_latest_compiled_files() {
-    local files=( $(ls ${__MDS_BUILD_DIR}/flags | sed 's|\.sh||g') )
-    local file_list=""
-    for (( i=0; i < ${#files[@]}; i+=1 ))
-    do
-        file_list="\"${files[${i}]}\" ${files}"
-    done
-    echo ${file_list}
+    ls "${__MDS_BUILD_DIR}"
 }
 
 __mds_get_test_enum_list() {
-    source ${__MDS_BUILD_DIR}/last.txt
-    local test_name=$( echo ${ORIGINAL_SOURCE} | awk -F '/' '{print $NF}' | sed 's|\.|_|g')
-    local test_dir_path="${__MDS_TEST_DIR}/${test_name}"
-    local files_no=$(( $(ls -l "${test_dir_path}" 2> /dev/null | wc -l) / 2 ))
-
-    if [[ ${files_no} == 0 ]]
+    local filename=$(echo "${COMP_WORDS[@]}" | grep -o -e '\(-n\|--name\) [^-]\+' | sed 's|-n||g;s|[" ]||g' | awk -F '/' '{print $NF}');
+    if [[ -z ${filename} ]]
     then
-        echo "0"
-        return 0
+        return
     fi
 
-    local enum_list=""
-    for (( i=0; i < ${files_no}; i+=1 ))
+    local test_dir_path="${__MDS_TEST_DIR}/${filename}"
+    local single_test_num=$(( $(ls -l "${test_dir_path}" 2> /dev/null | wc -l) / 2 ))
+    if [[ ${single_test_num} == 0 ]]
+    then
+        return
+    fi
+
+    declare -a enum_list=()
+    for (( i=0; i < ${single_test_num}; i+=1 ))
     do
-        enum_list="${i} ${enum_list}"
+        enum_list+=("${i}")
     done
-    echo ${enum_list}
+    echo "${enum_list[@]}"
 }
 
 __mds_filterout() {

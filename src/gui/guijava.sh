@@ -34,7 +34,7 @@ function menu_java_configs() {
 
 function menu_java_setup() {
     preload_templates MENU_JAVA_TEMPLATES
-    load_test_cases $(get_test_folder_name ${FILENAME})
+    load_test_cases
     set_default_template ${FILETYPE}
     menu_java_configs
 }

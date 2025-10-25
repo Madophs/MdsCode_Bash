@@ -17,7 +17,6 @@ function parse_args() {
             -f|--type)
                 param_validation ${1} ${2}
                 FILETYPE="${2}"
-                CREATION="Y"
                 shift
                 shift
                 ;;
@@ -107,7 +106,6 @@ function parse_args() {
             -u|--problem-url)
                 param_validation ${1} ${2}
                 PROBLEM_URL=${2}
-                CREATION="Y"
                 shift
                 shift
                 ;;
