@@ -196,9 +196,19 @@ function open_flags() {
     local path_to_file="${BUILD_DIR}/${FILENAME}/flags.sh"
     if [[ -f ${path_to_file} ]]
     then
-        open_with_editor ${path_to_file}
+        open_with_editor "${path_to_file}"
     else
         cout error "Flags file not found."
+    fi
+}
+
+function open_data() {
+    local path_to_file="${BUILD_DIR}/${FILENAME}/data.sh"
+    if [[ -f ${path_to_file} ]]
+    then
+        open_with_editor "${path_to_file}"
+    else
+        cout error "Data file not found."
     fi
 }
 
@@ -344,7 +354,8 @@ function display_help() {
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -g "--gui" "Run interactive mode with terminal GUI."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -u "--problem-url" "Create file based on provided url."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -s "--submit " "Submit last built file. (UVA Judge)"
-    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--flags" "Edit current compile flags."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--edit-flags" "Edit compile flags."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--edit-data" "Edit build data."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--clear-cookies" "Delete cookies"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -x "--debug" "Self explained"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -h "--help" "Show this"

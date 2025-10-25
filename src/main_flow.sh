@@ -57,6 +57,11 @@ function start_flow() {
         open_flags
     fi
 
+    if [[ ${OPEN_DATA} == Y ]]
+    then
+        open_data
+    fi
+
     if [[ ${SET_TEST_INDEX} != -1 ]]
     then
         set_nth_test_as_input

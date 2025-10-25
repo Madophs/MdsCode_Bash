@@ -17,6 +17,7 @@ IO_TYPE="IO" # I -> with input, O -> with output, N -> no IO redirection
 DEBUG="N"
 GUI="N"
 OPEN_FLAGS="N"
+OPEN_DATA="N"
 SUBMIT="N"
 NO_TEST=0
 STARTING_TEST=0

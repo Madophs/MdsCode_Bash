@@ -136,7 +136,7 @@ _mds() {
 
     if [[ ${cur} == --* ]]
     then
-        opts="--type --name --ignore-name --create --build --force-build --exec --exer --io --test --add --set-test --edit-test --gui --submit --flags --clear-cookies --debug --help"
+        opts="--type --name --ignore-name --create --build --force-build --exec --exer --io --test --add --set-test --edit-test --gui --submit --edit-flags --edit-data --clear-cookies --debug --help"
         opts=$(__mds_filterout "${opts}")
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0

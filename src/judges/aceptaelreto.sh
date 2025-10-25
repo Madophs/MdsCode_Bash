@@ -138,6 +138,7 @@ function aer_verdict() {
         esac
         sleep 3
     done
+    cout error "Failed to get verdict."
 }
 
 function aer_upload_file() {

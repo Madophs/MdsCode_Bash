@@ -122,8 +122,12 @@ function parse_args() {
                 DEBUG="Y"
                 shift
                 ;;
-            --flags)
+            --edit-flags)
                 OPEN_FLAGS="Y"
+                shift
+                ;;
+            --edit-data)
+                OPEN_DATA="Y"
                 shift
                 ;;
             --clear-cookies)
