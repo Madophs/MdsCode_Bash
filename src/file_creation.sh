@@ -2,45 +2,49 @@
 
 function apply_naming_convention() {
     missing_argument_validation 2 ${1} ${2}
-    declare -n filename=${1}
+    declare -n filename_ref=${1}
     local file_extension=${2}
 
     if [[ ${IGNORE_RENAMING} == Y ]]
     then
-        filename="${filename}.${file_extension}"
+        filename_ref="${filename_ref}.${file_extension}"
         return 0
     fi
 
     if [[ ${CONFIGS_MAP['PROBLEM_ID_AT_END']} == YES  && -z "${PROBLEM_ID}" ]]
     then
-        PROBLEM_ID=$(echo ${filename} | grep -o -e '^[0-9]\+')
+        PROBLEM_ID=$(echo ${filename_ref} | grep -o -e '^[0-9]\+')
         if [[ -n ${PROBLEM_ID} ]]
         then
-            filename=$(echo ${filename} | sed "s/^${PROBLEM_ID}//g")
+            filename_ref=$(echo ${filename_ref} | sed "s/^${PROBLEM_ID}//g")
         fi
     fi
 
-    filename=$(echo ${filename} | sed "s/\.${file_extension}//g")
+    # Remove extension, this last one should be pass as second parameter
+    filename_ref=$(echo ${filename_ref} | sed "s/\..*//g")
 
-    # trim leading/trailing whitespaces
-    filename=$(echo ${filename} | sed 's/^ *//g;s/ *$//g')
+    # Trim leading/trailing whitespaces
+    filename_ref=$(echo ${filename_ref} | sed 's/^ *//g;s/ *$//g')
+
+    # Replace undercores with spaces
+    filename_ref=$(echo ${filename_ref} | sed 's/_/ /g')
 
     # Remove weird characters
-    filename=$(sed 's/[^a-zA-Z 0-9\-_]//g' <(echo ${filename}))
+    filename_ref=$(sed 's/[^a-zA-Z0-9 _-]//g' <(echo ${filename_ref}))
 
     # Replacing non-english characters
-    filename=$(sed 's/á/a/g;s/é/e/g;s/í/i/g;s/ó/o/g;s/ú/u/g;s/ü/u/g;s/ñ/n/g' <(echo $filename))
-    filename=$(sed 's/Á/A/g;s/É/E/g;s/Í/I/g;s/Ó/O/g;s/Ú/U/g;s/Ü/U/g;s/Ñ/N/g' <(echo $filename))
+    filename_ref=$(sed 's/á/a/g;s/é/e/g;s/í/i/g;s/ó/o/g;s/ú/u/g;s/ü/u/g;s/ñ/n/g' <(echo $filename_ref))
+    filename_ref=$(sed 's/Á/A/g;s/É/E/g;s/Í/I/g;s/Ó/O/g;s/Ú/U/g;s/Ü/U/g;s/Ñ/N/g' <(echo $filename_ref))
 
     case ${CONFIGS_MAP['CASETYPE']} in
         UCWORDS)
-            filename="$(echo ${filename} | sed -e 's/\b\(.\)/\u\1/g')"
+            filename_ref="$(echo ${filename_ref} | sed -e 's/\b\(.\)/\u\1/g')"
         ;;
         UPPERCASE)
-            filename="$(echo ${filename} | tr '[:lower:]' '[:upper:]')"
+            filename_ref="$(echo ${filename_ref} | tr '[:lower:]' '[:upper:]')"
         ;;
         LOWERCASE)
-            filename="$(echo ${filename} | tr '[:upper:]' '[:lower:]')"
+            filename_ref="$(echo ${filename_ref} | tr '[:upper:]' '[:lower:]')"
         ;;
         *)
             cout warning "Ignoring unknown casetype ${CONFIGS_MAP['CASETYPE']}"
@@ -49,11 +53,11 @@ function apply_naming_convention() {
 
     if [[ -n "${PROBLEM_ID}" ]]
     then
-        filename="${filename} ${PROBLEM_ID}"
+        filename_ref="${filename_ref} ${PROBLEM_ID}"
     fi
 
-    filename=$(sed "s/ /${CONFIGS_MAP['WHITESPACE_REPLACE']}/g;s/-/${CONFIGS_MAP['WHITESPACE_REPLACE']}/g" <(echo ${filename}))
-    filename="${filename}.${file_extension}"
+    filename_ref=$(sed "s/ /${CONFIGS_MAP['WHITESPACE_REPLACE']}/g;s/-/${CONFIGS_MAP['WHITESPACE_REPLACE']}/g" <(echo ${filename_ref}))
+    filename_ref="${filename_ref}.${file_extension}"
 }
 
 function set_default_template() {
@@ -109,7 +113,7 @@ function create_file() {
         apply_naming_convention FILENAME ${FILETYPE}
         load_template template_content ${FILETYPE}
 
-        local file_fullpath="${FILEPATH}${FILENAME}"
+        local file_fullpath="${FILEPATH}/${FILENAME}"
         if [[ -f ${file_fullpath} ]]
         then
             cout warning "File ${FILENAME} already exists."
@@ -119,14 +123,14 @@ function create_file() {
             if [[ ${input} == y  || ${input} == Y ]]
             then
                 cout warning "Replacing file."
-                echo -e "${template_content}" > "${file_fullpath}"
+                printf "%s\n" "${template_content}" > "${file_fullpath}"
                 cout success "File \"${FILENAME}\" replaced successfully."
                 save_build_data
             else
                 cout info "Wise choice, bye..."
             fi
         else
-            echo -e "${template_content}" > "${file_fullpath}"
+            printf "%s\n" "${template_content}" > "${file_fullpath}"
             save_build_data
             cout success "File \"${FILENAME}\" created successfully."
         fi
