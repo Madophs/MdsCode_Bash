@@ -2,7 +2,7 @@
 
 function apply_naming_convention() {
     missing_argument_validation 2 ${1} ${2}
-    declare -n filename_ref=${1}
+    local -n filename_ref=${1}
     local file_extension=${2}
 
     if [[ ${IGNORE_RENAMING} == Y ]]
@@ -116,11 +116,10 @@ function create_file() {
         local file_fullpath="${FILEPATH}/${FILENAME}"
         if [[ -f ${file_fullpath} ]]
         then
-            cout warning "File ${FILENAME} already exists."
-            cout info "Replace? (Y/N)"
-            local input
+            cout warning "File ${FILENAME} already exists.\n Replace (Y/N)"
+            cout warning "Replace? (Y/N)"
             read input
-            if [[ ${input} == y  || ${input} == Y ]]
+            if [[ ${input} =~ [yY] ]]
             then
                 cout warning "Replacing file."
                 printf "%s\n" "${template_content}" > "${file_fullpath}"

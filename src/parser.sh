@@ -30,7 +30,6 @@ function parse_args() {
                     FILENAME="${FILENAME} ${1}"
                     shift
                 done
-                separate_filepath_and_filename FILENAME FILEPATH
                 ;;
             --ignore-rename)
                 IGNORE_RENAMING="Y"

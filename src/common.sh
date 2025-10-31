@@ -24,6 +24,9 @@ TEMP_DIR="/tmp/mdscode"
 WIDTH_1ST_OP=5
 WIDTH_2ND_OP=28
 
+# 9 => all, -lt 1 only errors
+declare -g -i PRINT_MSG_LEVEL=9
+
 function create_common_files() {
     mkdir -p "${TEMP_DIR}"
     mkdir -p "${LOCAL_DATA_DIR}"
@@ -60,25 +63,31 @@ function missing_argument_validation() {
 }
 
 function set_shell_colors() {
-    RED='\e[1;31m'
-    GREEN='\e[1;32m'
-    GREEN_DARK='\e[0;32m'
-    YELLOW='\e[1;33m'
-    BROWN='\e[0;33m'
-    BLUE='\e[1;34m'
-    BLUEG='\e[1;5;34m'
-    PURPLE='\e[1;35m'
-    PURPLEG='\e[1;5;35m'
-    CYAN='\e[1;36m'
-    CYAN_DARK='\e[0;36m'
-    BLK='\e[0;0m'
+    if [[ "${USE_COLOR}" == Y ]]
+    then
+        RED='\e[1;31m'
+        GREEN='\e[1;32m'
+        GREEN_DARK='\e[0;32m'
+        YELLOW='\e[1;33m'
+        BROWN='\e[0;33m'
+        BLUE='\e[1;34m'
+        BLUEG='\e[1;5;34m'
+        PURPLE='\e[1;35m'
+        PURPLEG='\e[1;5;35m'
+        CYAN='\e[1;36m'
+        CYAN_DARK='\e[0;36m'
+        BLK='\e[0;0m'
+    fi
 }
 
 function print_stacktrace() {
-    for ((i=1; i<${#BASH_SOURCE[@]}; i+=1))
-    do
-        printf "${YELLOW}${FUNCNAME[${i}]}${BROWN}...${GREEN}$(basename ${BASH_SOURCE[${i}]}):${CYAN}${BASH_LINENO[${i}]}${BLK}\n" >&2
-    done
+    if [[ "${PRINT_STACKTRACE}" == Y ]]
+    then
+        for ((i=1; i<${#BASH_SOURCE[@]}; i+=1))
+        do
+            printf "${YELLOW}${FUNCNAME[${i}]}${BROWN}...${GREEN}$(basename ${BASH_SOURCE[${i}]}):${CYAN}${BASH_LINENO[${i}]}${BLK}\n" >&2
+        done
+    fi
 }
 
 function cout() {
@@ -91,20 +100,21 @@ function cout() {
             print_stacktrace
             exit 1
         ;;
-        fault)
-            echo -e "${BLUE}[${PURPLE}FAULT${BLUE}]${BLK} ${messsage}" >&2
+        fault) # Non fatal error
+            [ ${PRINT_MSG_LEVEL} -gt 0 ] && echo -e "${BLUE}[${PURPLE}FAULT${BLUE}]${BLK} ${messsage}" >&2
+            return 1
         ;;
         debug)
-            echo -e "${BLUEG}[${PURPLE}DEBUG${BLUEG}]${BLK} ${messsage}" >&2
+            [ ${PRINT_MSG_LEVEL} -gt 1 ] && echo -e "${BLUEG}[${PURPLE}DEBUG${BLUEG}]${BLK} ${messsage}" >&2
         ;;
         green|success)
-            echo -e "${BLUE}[${GREEN}SUCCESS${BLUE}]${BLK} ${messsage}" >&2
+            [ ${PRINT_MSG_LEVEL} -gt 8 ] && echo -e "${BLUE}[${GREEN}SUCCESS${BLUE}]${BLK} ${messsage}" >&2
         ;;
         yellow|warning)
-            echo -e "${BLUE}[${YELLOW}WARNING${BLUE}]${BLK} ${messsage}" >&2
+            [ ${PRINT_MSG_LEVEL} -gt 2 ] && echo -e "${BLUE}[${YELLOW}WARNING${BLUE}]${BLK} ${messsage}" >&2
         ;;
         blue|info)
-            echo -e "${BLUE}[${CYAN}INFO${BLUE}]${BLK} ${messsage}" >&2
+            [ ${PRINT_MSG_LEVEL} -gt 5 ] && echo -e "${BLUE}[${CYAN}INFO${BLUE}]${BLK} ${messsage}" >&2
         ;;
     esac
 }
@@ -142,7 +152,7 @@ function save_build_data() {
 
     echo FULLNAME=\"${FILENAME}\" > "${build_data_file}"
     echo LANG=\"${FILETYPE}\" >> "${build_data_file}"
-    echo FULLPATH="\"$(realpath ${FILEPATH}${FILENAME})\"" >> "${build_data_file}"
+    echo FULLPATH="\"$(realpath ${FILEPATH}/${FILENAME})\"" >> "${build_data_file}"
     echo PROBLEM_ID="\"${PROBLEM_ID}\"" >> "${build_data_file}"
     echo PROBLEM_URL="\"${PROBLEM_URL}\"" >> "${build_data_file}"
     echo ONLINE_JUDGE="\"${ONLINE_JUDGE}\"" >> "${build_data_file}"
@@ -161,6 +171,9 @@ function save_build_data() {
         c)
             echo "export CCCOMPILER=\"${CONFIGS_MAP['CCCOMPILER']}\"" > "${build_flags_file}"
             echo "export CC_FLAGS=\"${CONFIGS_MAP['CC_FLAGS']}\"" >> "${build_flags_file}"
+            ;;
+        *)
+            > "${build_flags_file}"
             ;;
     esac
 }
@@ -219,12 +232,13 @@ function get_file_extension() {
 
 function separate_filepath_and_filename() {
     missing_argument_validation 2 ${1} ${2}
-    local -n file=${1}
-    local -n filepath=${2}
-    filepath=$(echo ${file} | grep -o -e '.*\/')
-    if [[ -n ${filepath} ]]
+    local -n filename_ref=${1}
+    local -n filepath_ref=${2}
+    filepath_ref=$(echo "${filename_ref}" | grep -o -e '.*\/' | sed 's|/$||g')
+    filename_ref=$(echo "${filename_ref}" | awk -F '/' '{print $NF}')
+    if [[ -z ${filepath_ref} ]]
     then
-        file=$(echo ${file} | sed "s|${filepath}||g")
+        filepath_ref="."
     fi
 }
 
@@ -236,6 +250,13 @@ function load_build_data() {
     fi
     source "${BUILD_DIR}/${FILENAME}/flags.sh" > /dev/null 2>&1
     source "${BUILD_DIR}/${FILENAME}/data.sh" > /dev/null 2>&1
+}
+
+function delete_build_data() {
+    if [[ -n "${FILENAME}" ]]
+    then
+        rm -rf "${BUILD_DIR}/${FILENAME}" > /dev/null 2>&1
+    fi
 }
 
 function is_cmd_option() {

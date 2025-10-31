@@ -10,6 +10,8 @@ source "${SRC_DIR}/guimode.sh"
 source "${SRC_DIR}/online_judge.sh"
 
 function start_flow() {
+    separate_filepath_and_filename FILENAME FILEPATH
+
     if [[ ${CLEAR_COOKIES_FLAG} == Y ]]
     then
         clear_cookies
@@ -79,7 +81,7 @@ function start_flow() {
 
     if [[ ${CREATION} == Y ]]
     then
-        open_with_editor "${FILEPATH}${FILENAME}"
+        open_with_editor "${FILEPATH}/${FILENAME}"
     fi
 }
 
@@ -90,4 +92,3 @@ function start() {
     load_configs
     start_flow
 }
-

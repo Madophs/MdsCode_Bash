@@ -29,13 +29,13 @@ function read_default_configs() {
 
 function read_custom_configs() {
     declare -a configs_map_keys=(${!CONFIGS_MAP[*]})
-    for (( i=0; i < ${#configs_map_keys[*]}; i+=1 ))
+    for (( i=0; i < ${#configs_map_keys[@]}; i+=1 ))
     do
         local result=$(env | grep -e "^${configs_map_keys[${i}]}")
         if [[ -n ${result} ]]
         then
-            local value=$(echo ${result} | grep -o -e '=.*' | sed s/^=//g)
-            declare -g -A CONFIGS_MAP+=(["${configs_map_keys[${i}]}"]="${value}")
+            local value=$(echo "${result}" | grep -o -e '=.*' | sed s/^=//g)
+            CONFIGS_MAP+=(["${configs_map_keys[${i}]}"]="${value}")
         fi
     done
 }

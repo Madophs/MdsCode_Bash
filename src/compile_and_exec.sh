@@ -40,9 +40,11 @@ function compile() {
         py)
             # python is an intepreted language, therefore we only copy the file to build directory
             cp -f "${FULLPATH}" "${BINARY_PATH}"
+            chmod +x "${BINARY_PATH}"
             ;;
         java)
             ${CONFIGS_MAP['JAVA_COMPILER']} "${FULLPATH}" -d "${BUILD_DIR}/${FILENAME}"
+            chmod +x "${BUILD_DIR}/${FILENAME}/Main.class"
             show_status_compilation_message $?
             ;;
     esac
@@ -50,12 +52,7 @@ function compile() {
 
 function is_allowed_build_filetype() {
     echo ${ALLOWED_BUILD_FILETYPES[*]} | grep -o -w -e "${1}" > /dev/null 2>&1
-    if [[ $(exit_is_zero $?) == YES ]]
-    then
-        echo "YES"
-    else
-        echo "NO"
-    fi
+    exit_is_zero $?
 }
 
 function build() {
