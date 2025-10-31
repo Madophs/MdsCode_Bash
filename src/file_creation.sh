@@ -29,12 +29,12 @@ function apply_naming_convention() {
     # Replace undercores with spaces
     filename_ref=$(echo ${filename_ref} | sed 's/_/ /g')
 
-    # Remove weird characters
-    filename_ref=$(sed 's/[^a-zA-Z0-9 _-]//g' <(echo ${filename_ref}))
-
     # Replacing non-english characters
-    filename_ref=$(sed 's/á/a/g;s/é/e/g;s/í/i/g;s/ó/o/g;s/ú/u/g;s/ü/u/g;s/ñ/n/g' <(echo $filename_ref))
-    filename_ref=$(sed 's/Á/A/g;s/É/E/g;s/Í/I/g;s/Ó/O/g;s/Ú/U/g;s/Ü/U/g;s/Ñ/N/g' <(echo $filename_ref))
+    filename_ref=$(sed 's/á/a/g;s/é/e/g;s/í/i/g;s/ó/o/g;s/ú/u/g;s/ü/u/g;s/ñ/n/g' <(echo "${filename_ref}"))
+    filename_ref=$(sed 's/Á/A/g;s/É/E/g;s/Í/I/g;s/Ó/O/g;s/Ú/U/g;s/Ü/U/g;s/Ñ/N/g' <(echo "${filename_ref}"))
+
+    # Remove weird characters
+    filename_ref=$(sed 's/[^a-zA-Z0-9 _-]//g' <(echo "${filename_ref}"))
 
     case ${CONFIGS_MAP['CASETYPE']} in
         UCWORDS)
@@ -116,8 +116,7 @@ function create_file() {
         local file_fullpath="${FILEPATH}/${FILENAME}"
         if [[ -f ${file_fullpath} ]]
         then
-            cout warning "File ${FILENAME} already exists.\n Replace (Y/N)"
-            cout warning "Replace? (Y/N)"
+            cout warning "File ${FILENAME} already exists.\nReplace (Y/N)"
             read input
             if [[ ${input} =~ [yY] ]]
             then

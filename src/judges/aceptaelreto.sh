@@ -24,9 +24,9 @@ function aer_set_sample_test() {
 
     if [[ ! -f "${TEMP_DIR}/${zip_filename}" ]]
     then
-        wget "${sample_test_link}" -P "${TEMP_DIR}"
+        wget -q "${sample_test_link}" -P "${TEMP_DIR}"
     fi
-    unzip -o "${TEMP_DIR}/${zip_filename}" -d "${TEMP_DIR}"
+    unzip -qq -o "${TEMP_DIR}/${zip_filename}" -d "${TEMP_DIR}"
 
     local test_src_folder="${TEST_DIR}/${FULLNAME}"
     mkdir -p "${test_src_folder}"

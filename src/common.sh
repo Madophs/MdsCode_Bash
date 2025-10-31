@@ -100,7 +100,7 @@ function cout() {
             print_stacktrace
             exit 1
         ;;
-        fault) # Non fatal error
+        fault) # Non fatal error, not used for far was it was planned at the beginning
             [ ${PRINT_MSG_LEVEL} -gt 0 ] && echo -e "${BLUE}[${PURPLE}FAULT${BLUE}]${BLK} ${messsage}" >&2
             return 1
         ;;

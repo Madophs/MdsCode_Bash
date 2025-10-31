@@ -28,20 +28,18 @@ function uva_parse_sample_tests() {
     declare -n sample_output_ref=${2}
     local file_content=$(cat "${TEMP_DIR}/${PROBLEM_ID}.txt")
 
-    local new_page_index=$(echo -e "${file_content}" | grep -n -e 'Universidad de Valladolid OJ' | grep -o -e '^[0-9]\+')
+    local new_page_index=$(printf "%s\n" "${file_content}" | grep -n -e 'Universidad de Valladolid OJ' | grep -o -e '^[0-9]\+')
     if [[ -n "${new_page_index}" ]]
     then
         local file_content=$(echo "${file_content}" | sed "${new_page_index},$(( new_page_index + 2 ))d")
     fi
 
-    local -a num_lines=( $(echo "${file_content}" | grep -n -e 'Sample \(Input\|Output\)' | grep -o -e '^[0-9]\+') )
-    local -i lines_count=$(echo "${file_content}" | wc -l | grep -o -e '^[0-9]\+')
-    local -i input_start=$(( lines_count - num_lines[0] ))
+    local -a num_lines=( $(printf "%s\n" "${file_content}" | grep -n -e 'Sample \(Input\|Output\)' | grep -o -e '^[0-9]\+') )
+    local -i lines_count=$(printf "%s\n" "${file_content}" | wc -l | grep -o -e '^[-1-9]\+')
     local -i gap_btw_in_out=$(( num_lines[1] - num_lines[0] - 2 ))
-    local -i output_start=$(( lines_count - num_lines[1] ))
 
-    sample_input_ref=$(echo -e "${file_content}" | tail -n ${input_start} | head -n ${gap_btw_in_out})
-    sample_output_ref=$(echo -e "${file_content}" | tail -n ${output_start})
+    sample_input_ref=$(printf "%s\n" "${file_content}" | sed -n "$(( ${num_lines[0]} + 1 )),$(( gap_btw_in_out + ${num_lines[0]} )){p}") # sed -n {line_start},{line_end}{p}
+    sample_output_ref=$(printf "%s\n" "${file_content}" | sed -n "$(( ${num_lines[1]} + 1 )),${lines_count}{p}") # sed -n {line_start},{line_end}{p}
 }
 
 function uva_download_problem_pdf() {
@@ -59,7 +57,7 @@ function uva_download_problem_pdf() {
         local pdf_link="${UVA_BASE_URL}/${pdf_href}"
     fi
 
-    wget "${pdf_link}" -P "${TEMP_DIR}"
+    wget -q "${pdf_link}" -P "${TEMP_DIR}"
 }
 
 function uva_set_sample_test() {

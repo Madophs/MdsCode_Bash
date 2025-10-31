@@ -1,12 +1,7 @@
 #!/bin/bash
 
 source ./../../mdscode
-
-export OPEN_WITH_EDITOR=NO
-PRINT_MSG_LEVEL=3
-
-TEST_TEMP_DIR="/tmp/mdstest"
-mkdir -p "${TEST_TEMP_DIR}"
+source ./helper_functions.sh
 
 function test_allowed_files() {
     local is_allowed=$(is_allowed_build_filetype "java")
@@ -33,23 +28,4 @@ function test_python_compile() {
 function test_java_compile() {
     local file_java="/tmp/mdstest/FWKSum_Numbers.java"
     helper_file_compile "${file_java}"
-}
-
-function helper_file_compile() {
-    local file="${1}"
-    CREATION=N
-    FILETYPE=
-    FILENAME=
-
-    start -n "${file}" -c < <(echo "y")
-    fwktest_assert_exit_code_equals $? 0
-    fwktest_assert_file "${file}"
-    load_build_data
-    fwktest_assert_string_equals "${file}" "${FULLPATH}"
-
-    CREATION=N
-    start -n "${file}" -b
-    fwktest_assert_executable "${BINARY_PATH}"
-    delete_build_data
-    rm -f "${file}"
 }

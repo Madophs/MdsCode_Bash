@@ -1,9 +1,7 @@
 #!/bin/bash
 
-source ./../../mdscode
-
-TEST_TEMP_DIR="/tmp/mdstest"
-mkdir -p "${TEST_TEMP_DIR}"
+source ../../mdscode
+source ./helper_functions.sh
 
 function test_naming_convention() {
     load_configs
