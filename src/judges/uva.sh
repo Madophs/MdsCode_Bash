@@ -21,6 +21,11 @@ function uva_parse_problem_data() {
         problem_id=$(echo "${raw_name}" | grep -o -e '^[0-9]\+')
         filename=$(echo "${raw_name}" | sed 's/^[0-9]\+ - //g')
     fi
+
+    if [[ -z ${filename} || -z ${problem_id} ]]
+    then
+        cout error "UVA online judge: failed to retrieve problem data."
+    fi
 }
 
 function uva_parse_sample_tests() {
