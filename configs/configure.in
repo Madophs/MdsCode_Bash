@@ -31,4 +31,4 @@ JAVA_HOME=
 UVA_TIMEZONE=Iceland
 
 # Days before deleting build and test data
-DAYS_BEFORE_DELETION=60
+DAYS_BEFORE_DELETION=180
