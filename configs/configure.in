@@ -29,3 +29,6 @@ JAVA_HOME=
 
 # For uva judge online submission timestamps
 UVA_TIMEZONE=Iceland
+
+# Days before deleting build and test data
+DAYS_BEFORE_DELETION=60

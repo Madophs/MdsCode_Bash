@@ -198,7 +198,7 @@ function delete_old_files() {
     do
         local creation_date=$(date +%s -d "${files[${i}]}")
         local days_diff=$(( (${current_date} - ${creation_date}) / (60 * 60 * 24) ))
-        if [[ ${days_diff} -ge 14 ]]
+        if [[ ${days_diff} -ge ${CONFIGS_MAP['DAYS_BEFORE_DELETION']} ]]
         then
             rm -rf ${target_dir}/${files[${j}]} &> /dev/null
         fi
