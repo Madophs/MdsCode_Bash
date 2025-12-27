@@ -6,13 +6,11 @@ declare -A CONFIGS_MAP=()
 
 function read_default_configs() {
     local line='' varname='' varvalue=''
-    local -i equals_index=0
     while read line;
     do
         [[ -z "${line}" || "${line}" =~ ^\ *# ]] && continue # Skip empty lines and comments
-        equals_index=$(expr index "${line}" "=")
-        varname="${line:0:$((equals_index-1))}"
-        varvalue="${line:${equals_index}}"
+        varname="${line%%=*}"
+        varvalue="${line##${varname}=}"
         CONFIGS_MAP+=(["${varname}"]="${varvalue}")
     done
 } < "${CONFIGS_FILE}"
