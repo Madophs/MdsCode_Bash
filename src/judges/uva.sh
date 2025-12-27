@@ -207,8 +207,7 @@ function uva_verdict() {
     fi
 }
 
-function set_upload_date()
-{
+function set_upload_date() {
     declare -n current_date_ref=${1}
     declare -n formatted_date_ref=${2}
     export TZ="${CONFIGS_MAP['UVA_TIMEZONE']}"

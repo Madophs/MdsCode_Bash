@@ -105,7 +105,7 @@ function cout() {
             return 1
         ;;
         debug)
-            [ ${PRINT_MSG_LEVEL} -gt 1 ] && echo -e "${BLUEG}[${PURPLE}DEBUG${BLUEG}]${BLK} ${messsage}" >&2
+            [ ${PRINT_MSG_LEVEL} -gt 1 ] && echo -e "${BLUE}[${PURPLE}DEBUG${BLUE}]${BLK} ${messsage}" >&2
         ;;
         green|success)
             [ ${PRINT_MSG_LEVEL} -gt 8 ] && echo -e "${BLUE}[${GREEN}SUCCESS${BLUE}]${BLK} ${messsage}" >&2
@@ -157,7 +157,7 @@ function save_build_data() {
     echo PROBLEM_URL="\"${PROBLEM_URL}\"" >> "${build_data_file}"
     echo ONLINE_JUDGE="\"${ONLINE_JUDGE}\"" >> "${build_data_file}"
 
-    local bin_name=$([ ${FILETYPE} == java ] && echo Main.class || echo run)
+    [[ "${FILETYPE}" == java ]] && local bin_name=Main.class || local bin_name=run
     echo BINARY_PATH="\"${BUILD_DIR}/${FILENAME}/${bin_name}\"" >> "${build_data_file}"
 
     # File's compilation flags
@@ -354,6 +354,25 @@ function common_setup() {
     create_common_files
     delete_old_files ${TEST_DIR}
     delete_old_files ${BUILD_DIR}
+}
+
+clock_start() {
+   [[ ! -v __CALLS_COUNTER ]] && declare -g -i __CALLS_COUNTER=0 # Clock counter used as varname's suffix
+   [[ ! -v __CLOCK_STACK ]] && declare -g -a __CLOCK_STACK=() # Stack containing internal clocks
+   declare -g -i __clock_start_${__CALLS_COUNTER}=$(( $(date +%s%N) / 1000 )) # Start time in microseconds
+   __CLOCK_STACK+=( __clock_start_${__CALLS_COUNTER} )
+   __CALLS_COUNTER+=1
+}
+
+# @brief computes total time spend in a function
+# the result can be found in __total_spend_time in microseconds
+clock_end() {
+    local -i __clock_end=$(( $(date +%s%N) / 1000 ))
+    local __clock_start_var=${__CLOCK_STACK[-1]}
+    __total_spend_time=$( echo "(${__clock_end} - ${!__clock_start_var}) / 1000000" | bc -l )
+    printf -v __total_spend_time "%.6f" ${__total_spend_time}
+    cout debug "Total time spend at <${YELLOW}${FUNCNAME[1]}${BLK}> is ${CYAN}${__total_spend_time}${BLK} seconds."
+    unset __CLOCK_STACK[-1] # Pop last variable time as will not be used again
 }
 
 function display_help() {
