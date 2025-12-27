@@ -13,6 +13,7 @@ function helper_reset_used_variables() {
     FILETYPE=
     FILEPATH=
     CREATE=N
+    CREATION=N
     PROBLEM_ID=
 }
 
@@ -46,7 +47,7 @@ function helper_file_compile() {
     load_build_data
     fwktest_assert_string_equals "${file}" "${FULLPATH}"
 
-    CREATION=N
+    helper_reset_used_variables
     start -n "${file}" -b
     fwktest_assert_executable "${BINARY_PATH}"
     delete_build_data

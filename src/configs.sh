@@ -4,26 +4,16 @@ CONFIGS_DIR="${SCRIPT_DIR}/configs"
 CONFIGS_FILE="${CONFIGS_DIR}/configure.in"
 declare -A CONFIGS_MAP=()
 
-function is_valid_line() {
-    local line=$1
-    if [[ -z ${line} ]]
-    then
-        echo "NO"
-    else
-        echo "${line}" | grep -e '^[#]' > /dev/null 2>&1
-        exit_is_not_zero $?
-    fi
-}
-
 function read_default_configs() {
+    local line='' varname='' varvalue=''
+    local -i equals_index=0
     while read line;
     do
-        if [[ $(is_valid_line "${line}") == YES ]]
-        then
-            local varname=$(echo ${line} | grep -o -e '^[A-Z_]*')
-            local varvalue=$(echo ${line} | grep -o -e '=.*' | sed s/^=//g)
-            CONFIGS_MAP+=(["${varname}"]="${varvalue}")
-        fi
+        [[ -z "${line}" || "${line}" =~ ^\ *# ]] && continue # Skip empty lines and comments
+        equals_index=$(expr index "${line}" "=")
+        varname="${line:0:$((equals_index-1))}"
+        varvalue="${line:${equals_index}}"
+        CONFIGS_MAP+=(["${varname}"]="${varvalue}")
     done
 } < "${CONFIGS_FILE}"
 
