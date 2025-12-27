@@ -19,13 +19,12 @@ function read_default_configs() {
 
 function read_custom_configs() {
     declare -a configs_map_keys=(${!CONFIGS_MAP[*]})
-    for (( i=0; i < ${#configs_map_keys[@]}; i+=1 ))
+    local varname
+    for varname in ${configs_map_keys[@]}
     do
-        local result=$(env | grep -e "^${configs_map_keys[${i}]}")
-        if [[ -n ${result} ]]
+        if [[ "${!varname@a}" == *x* ]]
         then
-            local value=$(echo "${result}" | grep -o -e '=.*' | sed s/^=//g)
-            CONFIGS_MAP+=(["${configs_map_keys[${i}]}"]="${value}")
+            CONFIGS_MAP+=(["${varname}"]="${!varname}")
         fi
     done
 }
