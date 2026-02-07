@@ -191,17 +191,21 @@ function open_with_editor() {
 }
 
 function delete_old_files() {
-    local target_dir="${1}"
-    local files=($(ls -l --time-style=full-iso "${target_dir}" | tail -n +2 | awk '{print $6" "$NF}' | paste -s -d ' '))
-    local current_date=$(date +%s)
-    for (( i=0, j=1; i < ${#files[@]}; i+=2,j+=2 ))
+    while (( $# > 0 ))
     do
-        local creation_date=$(date +%s -d "${files[${i}]}")
-        local days_diff=$(( (${current_date} - ${creation_date}) / (60 * 60 * 24) ))
-        if [[ ${days_diff} -ge ${CONFIGS_MAP['DAYS_BEFORE_DELETION']} ]]
-        then
-            rm -rf ${target_dir}/${files[${j}]} &> /dev/null
-        fi
+        local target_dir="${1}"
+        local files=($(ls -l --time-style=full-iso "${target_dir}" | tail -n +2 | awk '{print $6" "$NF}' | paste -s -d ' '))
+        local current_date=$(date +%s)
+        for (( i=0, j=1; i < ${#files[@]}; i+=2,j+=2 ))
+        do
+            local creation_date=$(date +%s -d "${files[${i}]}")
+            local days_diff=$(( (${current_date} - ${creation_date}) / (60 * 60 * 24) ))
+            if [[ ${days_diff} -ge ${CONFIGS_MAP['DAYS_BEFORE_DELETION']} ]]
+            then
+                rm -rf ${target_dir}/${files[${j}]} &> /dev/null
+            fi
+        done
+        shift
     done
 }
 
@@ -347,13 +351,6 @@ function enable_debug_if_specified() {
     then
         set -x
     fi
-}
-
-function common_setup() {
-    set_shell_colors
-    create_common_files
-    delete_old_files ${TEST_DIR}
-    delete_old_files ${BUILD_DIR}
 }
 
 function display_help() {

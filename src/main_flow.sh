@@ -87,8 +87,10 @@ function start_flow() {
 
 function start() {
     enable_debug_if_specified "$@"
-    common_setup
+    set_shell_colors
+    create_common_files
     parse_args "$@"
     load_configs
+    delete_old_files "${TEST_DIR}" "${BUILD_DIR}"
     start_flow
 }

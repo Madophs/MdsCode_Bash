@@ -125,6 +125,7 @@ function create_file() {
                 cout success "File \"${FILENAME}\" replaced successfully."
                 save_build_data
             else
+                [[ ! -d "${BUILD_DIR}/${FILENAME}" ]] && save_build_data && cout info "Generating build data"
                 cout info "Wise choice, bye..."
             fi
         else
