@@ -7,7 +7,7 @@ function apply_naming_convention() {
 
     if [[ ${IGNORE_RENAMING} == Y ]]
     then
-        filename_ref="${filename_ref}.${file_extension}"
+        [[ -z "${filename_ref##*.}" ]] && filename_ref="${filename_ref}.${file_extension}"
         return 0
     fi
 

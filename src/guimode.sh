@@ -52,6 +52,7 @@ function file_creation_wizard() {
     input_filename
     menu_choose_language
     apply_naming_convention FILENAME ${FILETYPE}
+    IGNORE_RENAMING=Y
 }
 
 function start_wizard() {

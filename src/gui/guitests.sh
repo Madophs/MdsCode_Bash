@@ -44,7 +44,7 @@ function test_cases_setup_menu() {
     then
         case ${testcase_choice} in
             "New test")
-                mdscode -a 1 "${FILENAME}"
+                create_test 1
                 load_test_cases ${src_folder_name}
                 test_cases_setup_menu ${func_ref}
             ;;

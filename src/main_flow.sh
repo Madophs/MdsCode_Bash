@@ -36,7 +36,7 @@ function start_flow() {
 
     if [[ ${CREATE_TESTS} == Y ]]
     then
-        create_test
+        create_test "${NO_TEST}"
     fi
 
     if [[ ${BUILDING} == Y ]]

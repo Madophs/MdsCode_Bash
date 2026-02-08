@@ -20,12 +20,13 @@ function align_tests() {
 }
 
 function create_test() {
-    if [[ $(is_digit ${NO_TEST}) == NO ]]
+    local -i no_tests=${1}
+    if (( no_tests == 0 ))
     then
-        cout error "Invalid value [${NO_TEST}]"
+        cout error "Invalid value for number of tests."
     fi
 
-    local test_src_folder_name=${FULLNAME}
+    local test_src_folder_name=${FILENAME}
     local test_src_folder=${TEST_DIR}/${test_src_folder_name}
 
     mkdir -p ${test_src_folder}
@@ -39,7 +40,7 @@ function create_test() {
     fi
 
     local editor_split_cmd_format=${CONFIGS_MAP['EDITOR_SPLIT_COMMAND']}
-    local end_test_num=$(( ${start_test_num} + ${NO_TEST} ))
+    local end_test_num=$(( ${start_test_num} + ${no_tests} ))
     for (( i=${start_test_num}; i < ${end_test_num}; i+=1 ))
     do
         local file1=${test_src_folder}/test_input_${i}.txt
@@ -50,7 +51,7 @@ function create_test() {
 }
 
 function set_nth_test_as_input() {
-    local test_src_folder_name=${FULLNAME}
+    local test_src_folder_name=${FULLNAME:-${FILENAME}}
     local test_src_folder=${TEST_DIR}/${test_src_folder_name}
     local target_test=${test_src_folder}/test_input_${SET_TEST_INDEX}.txt
     if [[ -f ${target_test} ]]
