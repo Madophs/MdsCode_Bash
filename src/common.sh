@@ -179,7 +179,7 @@ function save_build_data() {
 }
 
 function open_with_editor() {
-    if [[ ${CONFIGS_MAP['OPEN_WITH_EDITOR']} == YES ]]
+    if [[ ${CONFIGS_MAP['OPEN_WITH_EDITOR']} == YES || ${OPEN_FILE} == Y ]]
     then
         # Useful env variable to customize your editor
         export COMPETITIVE_MODE=Y
@@ -369,6 +369,7 @@ function display_help() {
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -a "--add-test [no tests]" "Add a test case for the specified file (IMPORTANT: filename must be specified)."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--set-test [nth test]" "Sets the input of the Nth test as input of \$MDS_INPUT. (IMPORTANT: filename must be specified)"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--edit-test [nth test]" "Edit the nth test."
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -o "--open" "Open file on competitive mode (loading build data)."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -g "--gui" "Run interactive mode with terminal GUI."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -u "--problem-url" "Create file based on provided url."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -s "--submit " "Submit last built file. (UVA Judge)"

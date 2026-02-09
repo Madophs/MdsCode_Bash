@@ -79,7 +79,7 @@ function start_flow() {
         submit_code
     fi
 
-    if [[ ${CREATION} == Y ]]
+    if [[ ${CREATION} == Y || ${OPEN_FILE} == Y ]]
     then
         open_with_editor "${FILEPATH}/${FILENAME}"
     fi

@@ -129,6 +129,10 @@ function parse_args() {
                 OPEN_DATA="Y"
                 shift
                 ;;
+            -o|--open)
+                OPEN_FILE="Y"
+                shift
+                ;;
             --clear-cookies)
                 CLEAR_COOKIES_FLAG="Y"
                 shift
