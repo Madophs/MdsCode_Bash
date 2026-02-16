@@ -153,9 +153,9 @@ function save_build_data() {
     echo FULLNAME=\"${FILENAME}\" > "${build_data_file}"
     echo LANG=\"${FILETYPE}\" >> "${build_data_file}"
     echo FULLPATH="\"$(realpath ${FILEPATH}/${FILENAME})\"" >> "${build_data_file}"
-    echo PROBLEM_ID="\"${PROBLEM_ID}\"" >> "${build_data_file}"
-    echo PROBLEM_URL="\"${PROBLEM_URL}\"" >> "${build_data_file}"
-    echo ONLINE_JUDGE="\"${ONLINE_JUDGE}\"" >> "${build_data_file}"
+    echo PROBLEM_ID="\${PROBLEM_ID:-\"${PROBLEM_ID}\"}" >> "${build_data_file}"
+    echo PROBLEM_URL="\${PROBLEM_URL:-\"${PROBLEM_URL}\"}" >> "${build_data_file}"
+    echo ONLINE_JUDGE="\${ONLINE_JUDGE:-\"${ONLINE_JUDGE}\"}" >> "${build_data_file}"
 
     [[ "${FILETYPE}" == java ]] && local bin_name=Main.class || local bin_name=run
     echo BINARY_PATH="\"${BUILD_DIR}/${FILENAME}/${bin_name}\"" >> "${build_data_file}"

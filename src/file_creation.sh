@@ -93,7 +93,7 @@ function load_template() {
 }
 
 function create_file() {
-    if [[ -n "${PROBLEM_URL}" ]]
+    if [[ -n "${PROBLEM_URL}" && -z "${ONLINE_JUDGE}" ]]
     then
         set_problem_data_by_url
     fi
@@ -125,8 +125,15 @@ function create_file() {
                 cout success "File \"${FILENAME}\" replaced successfully."
                 save_build_data
             else
-                [[ ! -d "${BUILD_DIR}/${FILENAME}" ]] && save_build_data && cout info "Generating build data"
-                cout info "Wise choice, bye..."
+                if [[ -d "${BUILD_DIR}/${FILENAME}" ]]
+                then
+                    cout warning "Update build data? (Y/N)"
+                    read input
+                    [[ ${input} =~ [yY] ]] && save_build_data && cout info "Updating build data..."
+                else
+                    save_build_data
+                    cout info "Generating build data..."
+                fi
             fi
         else
             printf "%s\n" "${template_content}" > "${file_fullpath}"
