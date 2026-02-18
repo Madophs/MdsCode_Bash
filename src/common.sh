@@ -176,6 +176,7 @@ function save_build_data() {
             > "${build_flags_file}"
             ;;
     esac
+    BUILD_DATA_STATUS="Saved"
 }
 
 function open_with_editor() {
@@ -248,12 +249,13 @@ function separate_filepath_and_filename() {
 
 function load_build_data() {
     local ignore_failure=${1:-NO}
-    if [[ "${ignore_failure}" == NO && (! -f "${BUILD_DIR}/${FILENAME}/flags.sh" || ! -f "${BUILD_DIR}/${FILENAME}/data.sh") ]]
+    if source "${BUILD_DIR}/${FILENAME}/"{flags,data}.sh > /dev/null 2>&1;
+    then
+        BUILD_DATA_STATUS="Loaded"
+    elif [[ "${ignore_failure}" == NO ]]
     then
         cout error "Build data is unavailable. Please, verify if filename is specified correctly."
     fi
-    source "${BUILD_DIR}/${FILENAME}/flags.sh" > /dev/null 2>&1
-    source "${BUILD_DIR}/${FILENAME}/data.sh" > /dev/null 2>&1
 }
 
 function delete_build_data() {

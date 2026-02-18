@@ -70,34 +70,39 @@ function menu_cpp_configs() {
     "Flags " "${CPP_STANDARD}${CPP_FLAGS}" \
     "Template" "${TEMPLATE}" \
     "Add test cases" "${TEST_CASES_ARE_SET}" \
+    "Save build data" "${BUILD_DATA_STATUS:-Not found}" \
     "Continue (create/open)" "" \
     "Close" "" 3>&1 1>&2 2>&3)
 
-    if [ -n "${choice_cpp_setup}" ]
+    if [[ -n "${choice_cpp_setup}" ]]
     then
         case ${choice_cpp_setup} in
             "C++ Standard ")
                 menu_cpp_standards
-            ;;
+                ;;
             "Flags ")
                 menu_cpp_flags
-            ;;
+                ;;
             "Template")
                 menu_templates ${FUNCNAME} MENU_CPP_TEMPLATES
-            ;;
+                ;;
             "Add test cases")
                 test_cases_setup_menu ${FUNCNAME}
-            ;;
+                ;;
+            "Save build data")
+                save_build_data
+                menu_cpp_configs
+                ;;
             "Continue (create/open)")
                 CREATION="Y"
                 if [[ ${TEST_CASES_ARE_SET} == YES ]]
                 then
                     SET_TEST_INDEX=0
                 fi
-            ;;
+                ;;
             *)
                 exit 0
-            ;;
+                ;;
         esac
     else
         exit 1
