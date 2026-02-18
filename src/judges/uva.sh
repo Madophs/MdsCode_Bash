@@ -162,13 +162,14 @@ function uva_verdict() {
         error_type=1
         if [[ ${latest_problem_id} != ${problem_id} ]]
         then
-            local latest_problem_id=$(echo ${latest_entry} | grep -o -e ">${problem_id}<" | grep -o -e '[0-9]\+')
+            latest_entry=$(curl -X GET --cookie ${UVA_COOKIES_FILE} -f -s -L --compressed ${UVA_SUBMISSIONS_URL} | grep '<tr class="sectiontableentry' -A 8 -m 1)
+            latest_problem_id=$(echo ${latest_entry} | grep -o -e ">${problem_id}<" | grep -o -e '[0-9]\+')
             error_type=2
             sleep 2
             continue
         fi
 
-        local latest_entry=$(curl -X GET --cookie ${UVA_COOKIES_FILE} -f -s -L --compressed ${UVA_SUBMISSIONS_URL} | grep '<tr class="sectiontableentry' -A 8 -m 1)
+        latest_entry=$(curl -X GET --cookie ${UVA_COOKIES_FILE} -f -s -L --compressed ${UVA_SUBMISSIONS_URL} | grep '<tr class="sectiontableentry' -A 8 -m 1)
         local datetime_submission=$(date +%s -d "$(echo ${latest_entry} | grep -o -e '[0-9]\+-[0-9]\+-[0-9]\+ [0-9]\+:[0-9]\+:[0-9]\+')")
         if [[ ${datetime_submission} < ${datetime_before_submission} ]]
         then
@@ -230,8 +231,9 @@ function uva_submit() {
 
     set_upload_date datetime_before_submission date_formatted
     cout info "Uploading... ${filename}"
-    cout info "Submission date: ${date_formatted}"
+    cout info "Submission date: <<${date_formatted}>>, epoch time: <<${datetime_before_submission}>>"
 
+    sleep 3
     # file upload
     curl -X POST -f -L -s -w '%{url_effective}' --compressed --cookie ${UVA_COOKIES_FILE} --cookie-jar ${UVA_COOKIES_FILE} -H "Content-Type: multipart/form-data" \
         -F localid=${problem_id}  -F language=${language_id} -F "codeupl=@${FULLPATH}" ${UVA_SUBMIT_URL} &> /dev/null
