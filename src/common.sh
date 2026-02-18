@@ -16,8 +16,8 @@ IO_DIR="${LOCAL_DATA_DIR}/io"
 TEST_DIR="${LOCAL_DATA_DIR}/tests"
 BUILD_DIR="${LOCAL_DATA_DIR}/build"
 COOKIES_DIR="${LOCAL_DATA_DIR}/cookies"
-MDS_INPUT="${IO_DIR}/input"
-MDS_OUTPUT="${IO_DIR}/output"
+export MDS_INPUT="${IO_DIR}/input"
+export MDS_OUTPUT="${IO_DIR}/output"
 TEMP_DIR="/tmp/mdscode"
 
 # Help menu columns width
@@ -377,6 +377,7 @@ function display_help() {
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--edit-data" "Edit build data."
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" "" "--clear-cookies" "Delete cookies"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -x "--debug" "Self explained"
+    printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -d "--bin-debug" "Debug executable using core utils (gdb)"
     printf "%-${WIDTH_1ST_OP}s %-${WIDTH_2ND_OP}s %s\n" -h "--help" "Show this"
     printf "\nDeveloped by Jehú Jair Ruiz Villegas\n"
     printf "Contact: jehuruvj@gmail.com\n"

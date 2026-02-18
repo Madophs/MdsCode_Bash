@@ -121,6 +121,10 @@ function parse_args() {
                 DEBUG="Y"
                 shift
                 ;;
+            -d|--bin-debug)
+                GDB_DEBUG="Y"
+                shift
+                ;;
             --edit-flags)
                 OPEN_FLAGS="Y"
                 shift

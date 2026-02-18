@@ -104,18 +104,31 @@ function execute() {
     io_presetup ${1}
 
     case ${LANG} in
-        cpp)
-            eval time ${BINARY_PATH} ${IO_ARGS}
-            ;;
-        c)
-            eval time ${BINARY_PATH} ${IO_ARGS}
+        cpp|c)
+            eval time "${BINARY_PATH}" ${IO_ARGS}
             ;;
         py)
-            eval time ${CONFIGS_MAP['PYTHON_BIN']} ${BINARY_PATH} ${IO_ARGS}
+            eval time "${CONFIGS_MAP['PYTHON_BIN']}" ${BINARY_PATH} ${IO_ARGS}
             ;;
         java)
             cd "${BUILD_DIR}/${FILENAME}"
-            eval time ${CONFIGS_MAP['JAVA_EXEC']} Main ${IO_ARGS}
+            eval time "${CONFIGS_MAP['JAVA_EXEC']}" Main ${IO_ARGS}
+            ;;
+        *)
+            cout error "Unsupported language <${LANG}>."
+            ;;
+    esac
+}
+
+function gdb_debug() {
+    if [[ ! -f "${BINARY_PATH}" ]]
+    then
+        cout error "File hasn't been compiled."
+    fi
+
+    case ${LANG} in
+        cpp|c)
+            gdb "${BINARY_PATH}"
             ;;
         *)
             cout error "Unsupported language <${LANG}>."

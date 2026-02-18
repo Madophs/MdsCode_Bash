@@ -15,6 +15,7 @@ IO_ARGS=""
 REDIRECT_OP="2>&1"
 IO_TYPE="IO" # I -> with input, O -> with output, N -> no IO redirection
 DEBUG="N"
+GDB_DEBUG="N"
 GUI="N"
 OPEN_FLAGS="N"
 OPEN_DATA="N"

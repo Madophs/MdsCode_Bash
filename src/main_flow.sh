@@ -28,6 +28,7 @@ function start_flow() {
     fi
 
     load_build_data
+    read_custom_configs
 
     if [[ -n "${PROBLEM_URL}" && ${CREATION} == Y ]]
     then
@@ -82,6 +83,11 @@ function start_flow() {
     if [[ ${CREATION} == Y || ${OPEN_FILE} == Y ]]
     then
         open_with_editor "${FILEPATH}/${FILENAME}"
+    fi
+
+    if [[ ${GDB_DEBUG} == Y ]]
+    then
+        gdb_debug
     fi
 }
 
