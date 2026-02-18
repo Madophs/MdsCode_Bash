@@ -249,7 +249,8 @@ function separate_filepath_and_filename() {
 
 function load_build_data() {
     local ignore_failure=${1:-NO}
-    if source "${BUILD_DIR}/${FILENAME}/"{flags,data}.sh > /dev/null 2>&1;
+    if source "${BUILD_DIR}/${FILENAME}/flags.sh"> /dev/null 2>&1 && \
+       source "${BUILD_DIR}/${FILENAME}/data.sh"> /dev/null 2>&1;
     then
         BUILD_DATA_STATUS="Loaded"
     elif [[ "${ignore_failure}" == NO ]]
